@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rishi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="application-name" content="Rishi">
+<meta name="apple-mobile-web-app-title" content="Rishi">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FFC933">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23FFC933'/%3E%3Ctext x='50' y='70' font-size='62' text-anchor='middle'%3E%F0%9F%A6%96%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FFC933'/%3E%3Ctext x='50' y='70' font-size='62' text-anchor='middle'%3E%F0%9F%A6%96%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#2B2350; --paper:#FFF6DC; --paper-dot:#F3E3B0; --card:#FFFFFF;
+  --sun:#FFC933; --coral:#FF6B5B; --leaf:#3DBE7A; --sky:#4CB8FF; --grape:#8B5CF6;
+  --muted:#7A6F9B; --good:#3DBE7A; --shadow:#2B2350;
+  --font:'Fredoka','Baloo 2','Nunito','Comic Sans MS','Trebuchet MS',system-ui,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#F4EEFF; --paper:#1F1B4D; --paper-dot:#2A2561; --card:#2E2970;
+    --muted:#B9ADE8; --shadow:#0E0B2E;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#F4EEFF; --paper:#1F1B4D; --paper-dot:#2A2561; --card:#2E2970;
+  --muted:#B9ADE8; --shadow:#0E0B2E;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  font-family:var(--font); color:var(--ink); background-color:var(--paper);
+  background-image:radial-gradient(var(--paper-dot) 2.5px, transparent 3px);
+  background-size:34px 34px;
+  overflow:hidden; -webkit-user-select:none; user-select:none;
+  -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+  overscroll-behavior:none;
+}
+button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible{outline:4px solid var(--grape);outline-offset:3px}
+
+/* chunky sticker look */
+.chunk{
+  border:4px solid var(--ink); border-radius:28px;
+  box-shadow:0 7px 0 var(--shadow);
+  transition:transform .08s ease, box-shadow .08s ease;
+}
+.chunk:active:not(:disabled){transform:translateY(5px);box-shadow:0 2px 0 var(--shadow)}
+
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;padding:18px 20px calc(18px + env(safe-area-inset-bottom,0px));overflow:auto}
+.screen.on{display:flex}
+
+/* floating backdrop */
+.sky{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.sky span{position:absolute;font-size:clamp(28px,6vmin,56px);opacity:.55;animation:drift 14s ease-in-out infinite}
+@keyframes drift{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-22px) rotate(6deg)}}
+.screen{z-index:1}
+
+/* HOME */
+#home{justify-content:center;gap:clamp(10px,2.4vh,26px);text-align:center}
+.dino{font-size:clamp(110px,26vmin,240px);line-height:1;filter:drop-shadow(0 8px 0 rgba(43,35,80,.18));animation:wiggle 3.2s ease-in-out infinite;cursor:pointer}
+@keyframes wiggle{0%,100%{transform:rotate(-4deg) scale(1)}50%{transform:rotate(4deg) scale(1.05)}}
+h1.hello{font-size:clamp(40px,9vmin,84px);font-weight:700;margin:0;line-height:1.05}
+.tag{font-size:clamp(18px,3.2vmin,28px);color:var(--muted);margin:0;font-weight:500}
+.play{
+  background:var(--leaf); color:#fff; font-weight:700; font-size:clamp(40px,8vmin,72px);
+  padding:.25em 1.3em; min-width:min(80vw,460px); text-shadow:0 3px 0 rgba(0,0,0,.2);
+  animation:pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{scale:1}50%{scale:1.04}}
+.row{display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap}
+.pill{background:var(--card);font-weight:600;font-size:clamp(20px,3.6vmin,32px);padding:.35em .9em;border-radius:999px;border:4px solid var(--ink);box-shadow:0 5px 0 var(--shadow)}
+.pill.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--shadow)}
+.gear{position:fixed;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:5;width:56px;height:56px;border-radius:50%;background:var(--card);border:3px solid var(--ink);font-size:26px;opacity:.75;overflow:hidden}
+.hold{overflow:hidden}
+.hold::after{content:"";position:absolute;left:0;bottom:0;height:100%;width:0;background:rgba(139,92,246,.35);pointer-events:none}
+.hold.holding::after{width:100%;transition:width var(--hold-ms,1500ms) linear}
+
+/* PLAY */
+#play{gap:clamp(8px,1.8vh,18px);justify-content:flex-start}
+.top{width:min(100%,1000px);display:flex;align-items:center;gap:12px}
+.homebtn{position:relative;width:58px;height:58px;border-radius:50%;background:var(--card);border:3px solid var(--ink);font-size:26px;flex:none}
+.prog{flex:1;display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.dot{width:clamp(22px,4.2vmin,34px);height:clamp(22px,4.2vmin,34px);border-radius:50%;border:3px solid var(--ink);background:var(--card);display:grid;place-items:center;font-size:clamp(12px,2.6vmin,20px);line-height:1}
+.dot.star{background:var(--sun)}
+.dot.retry{background:var(--sky)}
+.dot.now{box-shadow:0 0 0 4px var(--grape)}
+.score{font-weight:700;font-size:clamp(22px,4vmin,34px);background:var(--sun);color:#2B2350;padding:.15em .7em;border-radius:999px;border:3px solid var(--ink);flex:none;min-width:88px;text-align:center}
+.score.pop{animation:pop .4s}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.3) rotate(-5deg)}100%{transform:scale(1)}}
+.streak{font-weight:700;font-size:clamp(18px,3.2vmin,28px);min-height:1.3em;color:var(--coral)}
+
+.stage{width:min(100%,1000px);display:flex;align-items:flex-start;gap:clamp(10px,2vw,22px)}
+.mascot{font-size:clamp(70px,15vmin,140px);line-height:1;flex:none;cursor:pointer;filter:drop-shadow(0 6px 0 rgba(43,35,80,.18))}
+.mascot.bounce{animation:bounce .6s}
+.mascot.shake{animation:shake .5s}
+@keyframes bounce{0%,100%{transform:translateY(0)}30%{transform:translateY(-30px) rotate(-8deg)}60%{transform:translateY(0) rotate(6deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.bubble{
+  flex:1;position:relative;background:var(--card);padding:.6em .9em;min-height:clamp(70px,14vmin,130px);
+  font-size:clamp(24px,4.6vmin,42px);font-weight:600;line-height:1.2;display:flex;align-items:center;gap:12px;text-align:left;
+}
+.bubble::before{content:"";position:absolute;left:-18px;top:30px;width:26px;height:26px;background:var(--card);border-left:4px solid var(--ink);border-bottom:4px solid var(--ink);transform:rotate(45deg)}
+.bubble .spk{font-size:1.1em;flex:none}
+.display{
+  width:min(100%,1000px);background:var(--card);padding:clamp(8px,2vh,22px) 16px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  min-height:clamp(90px,20vh,230px);
+}
+.display.hidden{display:none}
+.dline{line-height:1.25;overflow-wrap:anywhere;letter-spacing:.06em;font-weight:600}
+.opts{width:min(100%,1000px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:clamp(12px,2.4vw,24px);margin-top:auto;padding-top:6px}
+.opt{
+  min-height:clamp(100px,19vh,190px);background:var(--c);color:#fff;font-weight:700;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:10px;
+  text-shadow:0 3px 0 rgba(0,0,0,.22);
+}
+.opt:nth-child(1){--c:var(--coral)} .opt:nth-child(2){--c:var(--sky)} .opt:nth-child(3){--c:var(--grape)} .opt:nth-child(4){--c:#E8871E}
+.opt .big{font-size:clamp(52px,11vmin,110px);line-height:1;text-shadow:none}
+.opt .num{font-size:clamp(52px,11vmin,110px);line-height:1}
+.opt .txt{font-size:clamp(26px,5vmin,46px);line-height:1.1}
+.opt .lbl{font-size:clamp(20px,3.6vmin,32px);line-height:1.1}
+.opt.wrong{animation:shake .45s;opacity:.35;filter:grayscale(.6);pointer-events:none}
+.opt.right{--c:var(--good);animation:bounce .6s}
+.opt.right::after{content:"✔";position:absolute;top:6px;right:14px;font-size:38px}
+.opt{position:relative}
+.opt.dim{opacity:.4;pointer-events:none}
+
+/* START MENU */
+.dino.sm{font-size:clamp(70px,14vmin,140px)}
+#home{gap:clamp(8px,1.8vh,18px)}
+.tiles{width:min(100%,920px);display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(12px,2.4vw,24px)}
+.tile{--c:var(--sky);background:var(--c);color:#fff;font-weight:700;text-shadow:0 3px 0 rgba(0,0,0,.22);display:flex;align-items:center;gap:14px;
+  padding:clamp(10px,2vh,22px) clamp(14px,2vw,26px);min-height:clamp(84px,15vh,150px);text-align:left}
+.tile .em{font-size:clamp(44px,9vmin,86px);line-height:1;text-shadow:none;flex:none}
+.tile .lb{font-size:clamp(22px,4.2vmin,40px);line-height:1.1;display:block}
+.tile .sub{display:block;font-size:clamp(14px,2.3vmin,20px);font-weight:500;opacity:.95;margin-top:2px;text-shadow:none}
+.tile.t1{--c:var(--grape)} .tile.t2{--c:var(--sky)} .tile.t3{--c:var(--leaf)} .tile.t4{--c:var(--coral)} .tile.t5{--c:#E8871E}
+.tiles.five .tile.wide{grid-column:1 / -1}
+#pick{justify-content:flex-start}
+#pick .tiles{margin:auto 0}
+.picktitle{flex:1;text-align:center;font-size:clamp(30px,6vmin,56px);margin:0;line-height:1.1}
+#nextBtn{width:min(100%,1000px);background:var(--sun);color:#2B2350;font-weight:700;font-size:clamp(26px,5vmin,44px);padding:.25em}
+@media (max-width:620px){ .tiles{grid-template-columns:1fr} }
+
+/* RESULT */
+#result{justify-content:center;gap:clamp(10px,2.4vh,24px);text-align:center}
+#result h2{font-size:clamp(36px,8vmin,72px);margin:0;line-height:1.05}
+.bigstars{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:900px;font-size:clamp(32px,7vmin,64px)}
+.bigstars span{display:inline-block;animation:starIn .5s both}
+@keyframes starIn{from{transform:scale(0) rotate(-90deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.sticker{font-size:clamp(100px,24vmin,200px);line-height:1;background:var(--card);border:5px dashed var(--ink);border-radius:36px;padding:.12em .22em;animation:stickerIn .9s .5s both;transform-origin:center}
+@keyframes stickerIn{from{transform:scale(0) rotate(-200deg)}to{transform:scale(1) rotate(-4deg)}}
+.small{font-size:clamp(18px,3vmin,26px);color:var(--muted);margin:0;font-weight:500}
+.btn-lg{background:var(--leaf);color:#fff;font-weight:700;font-size:clamp(28px,5.4vmin,48px);padding:.3em 1em;text-shadow:0 3px 0 rgba(0,0,0,.2)}
+.btn-alt{background:var(--card);color:var(--ink);font-weight:600;font-size:clamp(22px,4vmin,34px);padding:.3em .9em}
+
+/* MODALS */
+.modal{position:fixed;inset:0;z-index:20;background:rgba(20,14,50,.6);display:none;align-items:center;justify-content:center;padding:16px}
+.modal.on{display:flex}
+.sheet{background:var(--paper);width:min(100%,760px);max-height:92%;overflow:auto;padding:20px;border:5px solid var(--ink);border-radius:32px;box-shadow:0 9px 0 var(--shadow);-webkit-user-select:auto;user-select:auto}
+.sheet h3{margin:0 0 10px;font-size:30px}
+.sheet h4{margin:18px 0 8px;font-size:20px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{padding:.5em 1em;font-size:18px;font-weight:600;background:var(--card);border:3px solid var(--ink);border-radius:16px}
+.seg button.sel{background:var(--sun);color:#2B2350}
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;font-size:19px;flex-wrap:wrap}
+input[type=text]{font:inherit;font-size:19px;padding:.4em .7em;border:3px solid var(--ink);border-radius:14px;background:var(--card);color:var(--ink);width:180px}
+input[type=range]{width:200px;accent-color:var(--grape)}
+table{width:100%;border-collapse:collapse;font-size:17px}
+th,td{padding:6px 8px;text-align:left;border-bottom:2px solid var(--paper-dot)}
+.bar{height:12px;border-radius:8px;background:var(--paper-dot);overflow:hidden;min-width:90px}
+.bar i{display:block;height:100%;background:var(--leaf)}
+.book{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:12px;margin-top:10px}
+.book div{font-size:52px;text-align:center;background:var(--card);border:3px solid var(--ink);border-radius:20px;padding:8px 0;line-height:1.1}
+.book div.lock{filter:grayscale(1) brightness(.3);opacity:.35}
+.close{margin-top:16px;width:100%;background:var(--sun);color:#2B2350;font-weight:700;font-size:26px;padding:.4em}
+.danger{background:var(--coral);color:#fff;font-weight:600;font-size:17px;padding:.5em 1em;border:3px solid var(--ink);border-radius:14px}
+canvas#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:30}
+
+@media (max-width:620px){
+  .stage{flex-direction:column;align-items:center}
+  .bubble::before{display:none}
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
+</style>
+</head>
+<body>
+
+<div class="sky" aria-hidden="true">
+  <span style="left:6%;top:10%;animation-delay:0s">☁️</span>
+  <span style="left:78%;top:8%;animation-delay:-3s">⭐</span>
+  <span style="left:90%;top:48%;animation-delay:-6s">🪐</span>
+  <span style="left:3%;top:60%;animation-delay:-2s">🚀</span>
+  <span style="left:44%;top:3%;animation-delay:-8s">🌈</span>
+  <span style="left:70%;top:86%;animation-delay:-5s">🦸</span>
+  <span style="left:18%;top:88%;animation-delay:-9s">🐘</span>
+</div>
+
+<!-- HOME -->
+<section id="home" class="screen on">
+  <div class="dino sm" id="homeDino" role="img" aria-label="Friendly dinosaur">🦖</div>
+  <h1 class="hello" id="hello">Hi Rishi!</h1>
+  <p class="tag">What do you want to play?</p>
+  <div class="tiles" id="homeTiles"></div>
+  <div class="row">
+    <div class="pill" id="starTotal">⭐ 0</div>
+    <button class="pill btn" id="bookBtn">📒 My stickers</button>
+  </div>
+</section>
+
+<!-- PICKER -->
+<section id="pick" class="screen">
+  <div class="top">
+    <button class="homebtn" id="pickBack" aria-label="Back">⬅️</button>
+    <h2 class="picktitle" id="pickTitle">Math</h2>
+    <div style="width:58px;flex:none"></div>
+  </div>
+  <div class="tiles" id="pickTiles"></div>
+</section>
+
+<!-- PLAY -->
+<section id="play" class="screen">
+  <div class="top">
+    <button class="homebtn" id="homeHold" aria-label="Stop and choose something else">🏠</button>
+    <div class="prog" id="prog"></div>
+    <div class="score" id="score">⭐ 0</div>
+  </div>
+  <div class="streak" id="streak"></div>
+  <div class="stage">
+    <div class="mascot" id="mascot" role="button" aria-label="Hear the question again">🦖</div>
+    <button class="bubble chunk" id="bubble" aria-label="Hear the question again">
+      <span class="spk">🔊</span><span id="prompt"></span>
+    </button>
+  </div>
+  <div class="display chunk hidden" id="display"></div>
+  <div class="opts" id="opts"></div>
+  <button class="chunk" id="nextBtn" style="display:none">Next ➜</button>
+</section>
+
+<!-- RESULT -->
+<section id="result" class="screen">
+  <h2 id="resTitle">Great job!</h2>
+  <div class="bigstars" id="bigstars"></div>
+  <p class="small" id="resSub"></p>
+  <div class="sticker" id="newSticker">🦕</div>
+  <p class="small">You won a new sticker!</p>
+  <div class="row">
+    <button class="btn-lg chunk" id="againBtn">▶ Play again</button>
+    <button class="btn-alt chunk" id="homeBtn">🏠 Home</button>
+  </div>
+</section>
+
+<button class="gear hold" id="gear" aria-label="Grown-up settings (hold)">⚙️</button>
+
+<!-- STOP? -->
+<div class="modal" id="quitModal">
+  <div class="sheet" style="text-align:center">
+    <h3>Stop playing?</h3>
+    <p class="small" id="quitSub" style="margin-bottom:14px"></p>
+    <button class="close chunk" id="keepBtn" style="background:var(--leaf);color:#fff;font-size:34px;margin-top:0">▶ Keep playing</button>
+    <button class="btn-alt chunk" id="quitBtn" style="margin-top:16px;width:100%">🏠 Choose something else</button>
+  </div>
+</div>
+
+<!-- STICKER BOOK -->
+<div class="modal" id="bookModal">
+  <div class="sheet">
+    <h3>📒 My stickers</h3>
+    <div class="small" id="bookCount"></div>
+    <div class="book" id="book"></div>
+    <button class="close chunk" data-close>Close</button>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="modal" id="setModal">
+  <div class="sheet">
+    <h3>⚙️ Grown-up corner</h3>
+    <div class="field"><span>Child's name</span><input type="text" id="nameIn" maxlength="14"></div>
+    <h4>Which questions?</h4>
+    <div class="seg" id="segGrade">
+      <button data-v="K">Kindergarten</button><button data-v="1">Grade 1</button><button data-v="both">Both</button>
+    </div>
+    <h4>Questions per round</h4>
+    <div class="seg" id="segN">
+      <button data-v="5">5</button><button data-v="8">8</button><button data-v="10">10</button>
+    </div>
+    <h4>Sound</h4>
+    <div class="seg" id="segVoice"><button data-v="1">Voice on</button><button data-v="0">Voice off</button></div>
+    <div class="seg" id="segRead" style="margin-top:8px"><button data-v="1">Read answer choices</button><button data-v="0">Question only</button></div>
+    <div class="seg" id="segSfx" style="margin-top:8px"><button data-v="1">Sound effects on</button><button data-v="0">Sound effects off</button></div>
+    <div class="field"><span>Voice speed</span><input type="range" id="rate" min="0.6" max="1.2" step="0.05"></div>
+    <div class="field"><span>Hear a sample</span><button class="danger" style="background:var(--sky)" id="testVoice">🔊 Test voice</button></div>
+    <h4>Question source</h4>
+    <div class="small" id="srcStatus" style="margin-bottom:8px"></div>
+    <input type="text" id="urlIn" placeholder="Paste Google Sheet CSV link here" style="width:100%">
+    <div class="seg" style="margin-top:10px">
+      <button id="saveUrl">Save link</button><button id="refreshSheet">Refresh now</button><button id="clearUrl">Use built-in</button>
+    </div>
+    <h4>How Rishi is doing</h4>
+    <div id="stats"></div>
+    <h4>Reset</h4>
+    <button class="danger" id="resetBtn">Erase stars, stickers and progress</button>
+    <button class="close chunk" data-close>Done</button>
+  </div>
+</div>
+
+<canvas id="fx"></canvas>
+
+<script>
+const FALLBACK = [{"id": "K-01", "g": "K", "skill": "Counting", "lvl": 1, "prompt": "How many stars do you see?", "display": "⭐⭐", "opts": ["1", "2", "3"], "ans": "2", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-03", "g": "K", "skill": "Counting", "lvl": 1, "prompt": "How many balls do you see?", "display": "⚽⚽⚽⚽", "opts": ["3", "4", "5"], "ans": "4", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-04", "g": "K", "skill": "Counting", "lvl": 2, "prompt": "How many apples do you see?", "display": "🍎🍎🍎🍎🍎", "opts": ["4", "5", "6"], "ans": "5", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-05", "g": "K", "skill": "Counting", "lvl": 2, "prompt": "How many fish do you see?", "display": "🐟🐟🐟🐟🐟🐟🐟", "opts": ["6", "7", "8"], "ans": "7", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-06", "g": "K", "skill": "Counting", "lvl": 3, "prompt": "How many flowers do you see?", "display": "🌼🌼🌼🌼🌼🌼🌼🌼🌼", "opts": ["8", "9", "10"], "ans": "9", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-07", "g": "K", "skill": "Number recognition", "lvl": 1, "prompt": "Tap the number 4.", "display": "", "opts": ["4", "7", "2"], "ans": "4", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-09", "g": "K", "skill": "Number recognition", "lvl": 2, "prompt": "Which number shows this many?", "display": "🐸🐸🐸🐸🐸🐸", "opts": ["5", "6", "7"], "ans": "6", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-10", "g": "K", "skill": "Number order", "lvl": 2, "prompt": "Which number comes after 5?", "display": "5, ❓", "opts": ["4", "6", "7"], "ans": "6", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-11", "g": "K", "skill": "Compare groups", "lvl": 1, "prompt": "Which group has more?", "display": "Group A: 🐱🐱🐱🐱    Group B: 🐱🐱", "opts": ["Group A", "Group B", "Same"], "ans": "Group A", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-13", "g": "K", "skill": "Compare groups", "lvl": 2, "prompt": "Do these two groups have the same number?", "display": "🚗🚗🚗    🚕🚕🚕", "opts": ["Yes, same", "No, not the same"], "ans": "Yes, same", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-15", "g": "K", "skill": "Shapes", "lvl": 1, "prompt": "Tap the circle.", "display": "", "opts": ["🔴", "🟦", "🔺"], "ans": "🔴", "subject": "Math", "group": "Shapes & Patterns", "fact": "", "read": true}, {"id": "K-17", "g": "K", "skill": "Shapes", "lvl": 1, "prompt": "Tap the triangle.", "display": "", "opts": ["🔺", "🟩", "🔵"], "ans": "🔺", "subject": "Math", "group": "Shapes & Patterns", "fact": "", "read": true}, {"id": "K-18", "g": "K", "skill": "Shapes", "lvl": 2, "prompt": "Which shape has 3 sides?", "display": "", "opts": ["Triangle", "Square", "Circle"], "ans": "Triangle", "subject": "Math", "group": "Shapes & Patterns", "fact": "", "read": true}, {"id": "K-20", "g": "K", "skill": "Addition", "lvl": 1, "prompt": "2 birds and 1 more bird. How many in all?", "display": "🐦🐦 + 🐦", "opts": ["2", "3", "4"], "ans": "3", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-21", "g": "K", "skill": "Addition", "lvl": 2, "prompt": "3 cookies and 2 more cookies. How many in all?", "display": "🍪🍪🍪 + 🍪🍪", "opts": ["4", "5", "6"], "ans": "5", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-23", "g": "K", "skill": "Subtraction", "lvl": 1, "prompt": "3 balloons. 1 floats away. How many are left?", "display": "🎈🎈🎈 − 🎈", "opts": ["1", "2", "3"], "ans": "2", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-24", "g": "K", "skill": "Subtraction", "lvl": 2, "prompt": "5 cookies. You eat 2. How many are left?", "display": "🍪🍪🍪🍪🍪 − 🍪🍪", "opts": ["2", "3", "4"], "ans": "3", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-26", "g": "K", "skill": "Patterns", "lvl": 1, "prompt": "What comes next?", "display": "🔴🔵🔴🔵🔴 ❓", "opts": ["🔴", "🔵", "🟢"], "ans": "🔵", "subject": "Math", "group": "Shapes & Patterns", "fact": "", "read": true}, {"id": "K-28", "g": "K", "skill": "Patterns", "lvl": 2, "prompt": "What comes next?", "display": "🍎🍎🍌🍎🍎🍌🍎🍎 ❓", "opts": ["🍎", "🍌", "🍇"], "ans": "🍌", "subject": "Math", "group": "Shapes & Patterns", "fact": "", "read": true}, {"id": "K-32", "g": "K", "skill": "Making 5", "lvl": 3, "prompt": "3 and how many more make 5?", "display": "3 + ❓ = 5", "opts": ["1", "2", "3"], "ans": "2", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-33", "g": "K", "skill": "Time", "lvl": 1, "prompt": "When do you go to sleep?", "display": "", "opts": ["🌞 Day", "🌙 Night"], "ans": "🌙 Night", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "K-36", "g": "K", "skill": "Time", "lvl": 2, "prompt": "What day comes after Monday?", "display": "Monday, ❓", "opts": ["Sunday", "Tuesday", "Friday"], "ans": "Tuesday", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "K-40", "g": "K", "skill": "Measurement", "lvl": 1, "prompt": "Which one is taller?", "display": "", "opts": ["🌳 tree", "🍄 mushroom"], "ans": "🌳 tree", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "K-43", "g": "K", "skill": "Measurement", "lvl": 2, "prompt": "Which one holds more water?", "display": "", "opts": ["🛁 bathtub", "🥛 cup"], "ans": "🛁 bathtub", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "K-45", "g": "K", "skill": "Addition", "lvl": 1, "prompt": "What is 3 plus 1?", "display": "3 + 1", "opts": ["3", "4", "5"], "ans": "4", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-47", "g": "K", "skill": "Addition", "lvl": 2, "prompt": "4 bees and 2 more bees. How many in all?", "display": "🐝🐝🐝🐝 + 🐝🐝", "opts": ["5", "6", "7"], "ans": "6", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-49", "g": "K", "skill": "Addition", "lvl": 3, "prompt": "What is 5 plus 4?", "display": "5 + 4", "opts": ["8", "9", "10"], "ans": "9", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-54", "g": "K", "skill": "Subtraction", "lvl": 3, "prompt": "What is 3 take away 3?", "display": "3 − 3", "opts": ["0", "1", "3"], "ans": "0", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-01", "g": "1", "skill": "Addition", "lvl": 1, "prompt": "What is 4 plus 3?", "display": "4 + 3", "opts": ["6", "7", "8"], "ans": "7", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-02", "g": "1", "skill": "Addition", "lvl": 1, "prompt": "What is 5 plus 5?", "display": "5 + 5", "opts": ["9", "10", "11"], "ans": "10", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-04", "g": "1", "skill": "Addition", "lvl": 2, "prompt": "Mia has 4 stickers. She gets 5 more. How many stickers does Mia have now?", "display": "⭐⭐⭐⭐ + ⭐⭐⭐⭐⭐", "opts": ["8", "9", "10"], "ans": "9", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-05", "g": "1", "skill": "Addition", "lvl": 3, "prompt": "What is 7 plus 5?", "display": "7 + 5", "opts": ["11", "12", "13"], "ans": "12", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-06", "g": "1", "skill": "Missing number", "lvl": 3, "prompt": "What number makes this true? 3 plus what equals 7?", "display": "3 + ❓ = 7", "opts": ["3", "4", "5"], "ans": "4", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-07", "g": "1", "skill": "Equal sides", "lvl": 3, "prompt": "Is 4 plus 2 the same as 3 plus 3?", "display": "4 + 2  =?  3 + 3", "opts": ["Yes", "No"], "ans": "Yes", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-08", "g": "1", "skill": "Subtraction", "lvl": 1, "prompt": "What is 9 minus 4?", "display": "9 − 4", "opts": ["4", "5", "6"], "ans": "5", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-09", "g": "1", "skill": "Subtraction", "lvl": 1, "prompt": "What is 10 minus 3?", "display": "10 − 3", "opts": ["6", "7", "8"], "ans": "7", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-10", "g": "1", "skill": "Subtraction", "lvl": 2, "prompt": "There are 8 birds in a tree. 3 fly away. How many are left?", "display": "🐦🐦🐦🐦🐦🐦🐦🐦 − 🐦🐦🐦", "opts": ["4", "5", "6"], "ans": "5", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-12", "g": "1", "skill": "Subtraction", "lvl": 3, "prompt": "What is 14 minus 6?", "display": "14 − 6", "opts": ["7", "8", "9"], "ans": "8", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-13", "g": "1", "skill": "Place value", "lvl": 2, "prompt": "What number is 1 ten and 4 ones?", "display": "1 ten + 4 ones", "opts": ["41", "14", "5"], "ans": "14", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "G1-14", "g": "1", "skill": "Place value", "lvl": 3, "prompt": "What number is 2 tens and 0 ones?", "display": "2 tens + 0 ones", "opts": ["2", "12", "20"], "ans": "20", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "G1-15", "g": "1", "skill": "Number order", "lvl": 1, "prompt": "What number comes before 15?", "display": "❓, 15", "opts": ["14", "16", "51"], "ans": "14", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "G1-17", "g": "1", "skill": "Number order", "lvl": 1, "prompt": "What number is missing?", "display": "6, 7, ❓, 9", "opts": ["8", "10", "5"], "ans": "8", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "G1-18", "g": "1", "skill": "Skip counting", "lvl": 2, "prompt": "Count by tens. What number is missing?", "display": "10, 20, ❓, 40", "opts": ["25", "30", "35"], "ans": "30", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "G1-19", "g": "1", "skill": "Compare numbers", "lvl": 2, "prompt": "Which number is greater, 12 or 21?", "display": "", "opts": ["12", "21"], "ans": "21", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "G1-21", "g": "1", "skill": "Shapes", "lvl": 2, "prompt": "How many corners does a square have?", "display": "🟦", "opts": ["3", "4", "5"], "ans": "4", "subject": "Math", "group": "Shapes & Patterns", "fact": "", "read": true}, {"id": "G1-22", "g": "1", "skill": "Time", "lvl": 3, "prompt": "What time does the clock show?", "display": "🕒", "opts": ["2 o'clock", "3 o'clock", "4 o'clock"], "ans": "3 o'clock", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "G1-23", "g": "1", "skill": "Time", "lvl": 1, "prompt": "What time does the clock show?", "display": "🕖", "opts": ["6 o'clock", "7 o'clock", "8 o'clock"], "ans": "7 o'clock", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "G1-24", "g": "1", "skill": "Time", "lvl": 1, "prompt": "What time does the clock show?", "display": "🕙", "opts": ["9 o'clock", "10 o'clock", "11 o'clock"], "ans": "10 o'clock", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "G1-25", "g": "1", "skill": "Time", "lvl": 2, "prompt": "What time does the clock show?", "display": "🕛", "opts": ["11 o'clock", "12 o'clock", "1 o'clock"], "ans": "12 o'clock", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "G1-26", "g": "1", "skill": "Time", "lvl": 2, "prompt": "What day comes before Friday?", "display": "❓, Friday", "opts": ["Thursday", "Saturday", "Wednesday"], "ans": "Thursday", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "G1-29", "g": "1", "skill": "Time", "lvl": 3, "prompt": "What time does the clock show?", "display": "🕝", "opts": ["2 o'clock", "2:30", "3:30"], "ans": "2:30", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "G1-30", "g": "1", "skill": "Time", "lvl": 3, "prompt": "What time does the clock show?", "display": "🕠", "opts": ["5 o'clock", "5:30", "6:30"], "ans": "5:30", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "G1-31", "g": "1", "skill": "Time", "lvl": 3, "prompt": "It is 4 o'clock. What time will it be in 1 hour?", "display": "🕓 → ❓", "opts": ["3 o'clock", "5 o'clock", "6 o'clock"], "ans": "5 o'clock", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "G1-32", "g": "1", "skill": "Measurement", "lvl": 1, "prompt": "Which is longer?", "display": "", "opts": ["✏️ pencil", "🚌 bus"], "ans": "🚌 bus", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "G1-33", "g": "1", "skill": "Measurement", "lvl": 1, "prompt": "Which is heavier?", "display": "", "opts": ["🐘 elephant", "🐕 dog"], "ans": "🐘 elephant", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "G1-34", "g": "1", "skill": "Measurement", "lvl": 2, "prompt": "Sam's rope is 5 blocks long. Tia's rope is 8 blocks long. Whose rope is longer?", "display": "", "opts": ["Sam's rope", "Tia's rope"], "ans": "Tia's rope", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "G1-37", "g": "1", "skill": "Measurement", "lvl": 3, "prompt": "A book is 6 paperclips long. A crayon is 3 paperclips long. How much longer is the book?", "display": "", "opts": ["2", "3", "4"], "ans": "3", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "G1-38", "g": "1", "skill": "Addition", "lvl": 1, "prompt": "What is 3 plus 6?", "display": "3 + 6", "opts": ["8", "9", "10"], "ans": "9", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-40", "g": "1", "skill": "Addition", "lvl": 2, "prompt": "Leo has 7 toy cars. He gets 4 more. How many cars does Leo have now?", "display": "🚗🚗🚗🚗🚗🚗🚗 + 🚗🚗🚗🚗", "opts": ["10", "11", "12"], "ans": "11", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-41", "g": "1", "skill": "Addition", "lvl": 3, "prompt": "What is 9 plus 4?", "display": "9 + 4", "opts": ["12", "13", "14"], "ans": "13", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-42", "g": "1", "skill": "Addition", "lvl": 3, "prompt": "What is 6 plus 6?", "display": "6 + 6", "opts": ["11", "12", "13"], "ans": "12", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-43", "g": "1", "skill": "Addition", "lvl": 3, "prompt": "Ava picked 8 flowers. Then she picked 7 more. How many flowers did she pick in all?", "display": "🌷🌷🌷🌷🌷🌷🌷🌷 + 🌷🌷🌷🌷🌷🌷🌷", "opts": ["14", "15", "16"], "ans": "15", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-44", "g": "1", "skill": "Addition", "lvl": 3, "prompt": "Which is the same as 5 plus 3?", "display": "5 + 3", "opts": ["4 + 4", "2 + 2", "6 + 3"], "ans": "4 + 4", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-46", "g": "1", "skill": "Subtraction", "lvl": 1, "prompt": "What is 10 minus 6?", "display": "10 − 6", "opts": ["3", "4", "5"], "ans": "4", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-47", "g": "1", "skill": "Subtraction", "lvl": 2, "prompt": "What is 11 minus 4?", "display": "11 − 4", "opts": ["6", "7", "8"], "ans": "7", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-49", "g": "1", "skill": "Subtraction", "lvl": 2, "prompt": "There are 9 apples. 5 are red and the rest are green. How many are green?", "display": "🍎🍎🍎🍎🍎🍏🍏🍏🍏", "opts": ["3", "4", "5"], "ans": "4", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-50", "g": "1", "skill": "Subtraction", "lvl": 3, "prompt": "What is 13 minus 4?", "display": "13 − 4", "opts": ["8", "9", "10"], "ans": "9", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-51", "g": "1", "skill": "Subtraction", "lvl": 3, "prompt": "Sam had 12 crayons. He gave 3 to a friend. How many crayons does Sam have now?", "display": "🖍️🖍️🖍️🖍️🖍️🖍️🖍️🖍️🖍️🖍️🖍️🖍️ − 🖍️🖍️🖍️", "opts": ["8", "9", "10"], "ans": "9", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-52", "g": "1", "skill": "Missing number", "lvl": 3, "prompt": "What number makes this true? 9 minus what equals 6?", "display": "9 − ❓ = 6", "opts": ["2", "3", "4"], "ans": "3", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-55", "g": "K", "skill": "Counting", "lvl": 3, "prompt": "How many stars do you see?", "display": "⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐", "opts": ["11", "12", "13", "14"], "ans": "12", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-56", "g": "K", "skill": "Counting", "lvl": 3, "prompt": "How many ducks do you see?", "display": "🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆🦆", "opts": ["14", "15", "16", "17"], "ans": "15", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-57", "g": "K", "skill": "Counting", "lvl": 3, "prompt": "How many balloons do you see?", "display": "🎈🎈🎈🎈🎈🎈🎈🎈🎈🎈🎈🎈🎈", "opts": ["12", "13", "14", "15"], "ans": "13", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-58", "g": "K", "skill": "Counting", "lvl": 3, "prompt": "How many red apples do you see?", "display": "🍎🍏🍎🍎🍏🍎🍏", "opts": ["3", "4", "5", "6"], "ans": "4", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-59", "g": "K", "skill": "Number order", "lvl": 3, "prompt": "What number is one more than 9?", "display": "9 + 1", "opts": ["8", "10", "11", "19"], "ans": "10", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-60", "g": "K", "skill": "Number order", "lvl": 3, "prompt": "What number is one less than 7?", "display": "7 − 1", "opts": ["5", "6", "8", "17"], "ans": "6", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-61", "g": "K", "skill": "Number order", "lvl": 3, "prompt": "Which number comes between 12 and 14?", "display": "12, ❓, 14", "opts": ["11", "13", "15", "16"], "ans": "13", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-62", "g": "K", "skill": "Number order", "lvl": 3, "prompt": "What number comes after 17?", "display": "17, ❓", "opts": ["16", "18", "19", "20"], "ans": "18", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-63", "g": "K", "skill": "Skip counting", "lvl": 3, "prompt": "Count by twos. What number is missing?", "display": "2, 4, ❓, 8", "opts": ["5", "6", "7", "10"], "ans": "6", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-64", "g": "K", "skill": "Skip counting", "lvl": 3, "prompt": "Count by fives. What number is missing?", "display": "5, 10, ❓, 20", "opts": ["12", "15", "18", "25"], "ans": "15", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-65", "g": "K", "skill": "Compare numbers", "lvl": 3, "prompt": "Which number is the biggest?", "display": "", "opts": ["9", "14", "11", "7"], "ans": "14", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-66", "g": "K", "skill": "Compare numbers", "lvl": 3, "prompt": "Which number is the smallest?", "display": "", "opts": ["15", "8", "12", "19"], "ans": "8", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-67", "g": "K", "skill": "Compare groups", "lvl": 3, "prompt": "Which group has more?", "display": "Group A: ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐    Group B: ⭐⭐⭐⭐⭐⭐⭐⭐⭐", "opts": ["Group A", "Group B", "Same"], "ans": "Group A", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "K-68", "g": "K", "skill": "Addition", "lvl": 3, "prompt": "What is 4 plus 3?", "display": "4 + 3", "opts": ["6", "7", "8", "9"], "ans": "7", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-69", "g": "K", "skill": "Addition", "lvl": 3, "prompt": "What is 6 plus 4?", "display": "6 + 4", "opts": ["9", "10", "11", "12"], "ans": "10", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-70", "g": "K", "skill": "Addition", "lvl": 3, "prompt": "What is 7 plus 2?", "display": "7 + 2", "opts": ["8", "9", "10", "11"], "ans": "9", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-71", "g": "K", "skill": "Addition", "lvl": 3, "prompt": "There are 5 red cars and 4 blue cars. How many cars are there in all?", "display": "🚗🚗🚗🚗🚗🚙🚙🚙🚙", "opts": ["8", "9", "10", "11"], "ans": "9", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-72", "g": "K", "skill": "Addition", "lvl": 3, "prompt": "Which one is the same as 3 plus 2?", "display": "3 + 2", "opts": ["4 + 1", "2 + 2", "3 + 3", "1 + 3"], "ans": "4 + 1", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-73", "g": "K", "skill": "Subtraction", "lvl": 3, "prompt": "What is 8 minus 3?", "display": "8 − 3", "opts": ["4", "5", "6", "7"], "ans": "5", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-74", "g": "K", "skill": "Subtraction", "lvl": 3, "prompt": "What is 9 minus 6?", "display": "9 − 6", "opts": ["2", "3", "4", "5"], "ans": "3", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-75", "g": "K", "skill": "Subtraction", "lvl": 3, "prompt": "What is 10 minus 4?", "display": "10 − 4", "opts": ["5", "6", "7", "8"], "ans": "6", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-76", "g": "K", "skill": "Subtraction", "lvl": 3, "prompt": "Maya has 7 stickers. She gives 3 to her friend. How many stickers does Maya have now?", "display": "⭐⭐⭐⭐⭐⭐⭐ − ⭐⭐⭐", "opts": ["3", "4", "5", "6"], "ans": "4", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-77", "g": "K", "skill": "Missing number", "lvl": 3, "prompt": "What number goes in the box? 4 plus what makes 6?", "display": "4 + ❓ = 6", "opts": ["1", "2", "3", "4"], "ans": "2", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-78", "g": "K", "skill": "Missing number", "lvl": 3, "prompt": "What number goes in the box? 6 plus what makes 9?", "display": "6 + ❓ = 9", "opts": ["2", "3", "4", "5"], "ans": "3", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-79", "g": "K", "skill": "Making 10", "lvl": 3, "prompt": "7 and how many more make 10?", "display": "7 + ❓ = 10", "opts": ["2", "3", "4", "5"], "ans": "3", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-80", "g": "K", "skill": "Making 10", "lvl": 3, "prompt": "6 and how many more make 10?", "display": "6 + ❓ = 10", "opts": ["3", "4", "5", "6"], "ans": "4", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "K-81", "g": "K", "skill": "Shapes", "lvl": 3, "prompt": "Which shape has 4 equal sides?", "display": "", "opts": ["Square", "Triangle", "Circle", "Hexagon"], "ans": "Square", "subject": "Math", "group": "Shapes & Patterns", "fact": "", "read": true}, {"id": "K-82", "g": "K", "skill": "Shapes", "lvl": 3, "prompt": "Which shape has no corners?", "display": "", "opts": ["Circle", "Square", "Triangle", "Rectangle"], "ans": "Circle", "subject": "Math", "group": "Shapes & Patterns", "fact": "", "read": true}, {"id": "K-83", "g": "K", "skill": "Patterns", "lvl": 3, "prompt": "What comes next?", "display": "🐶🐱🐭🐶🐱🐭🐶 ❓", "opts": ["🐶", "🐱", "🐭", "🐰"], "ans": "🐱", "subject": "Math", "group": "Shapes & Patterns", "fact": "", "read": true}, {"id": "K-84", "g": "K", "skill": "Patterns", "lvl": 3, "prompt": "What comes next?", "display": "1, 2, 3, 1, 2, 3, 1, ❓", "opts": ["1", "2", "3", "4"], "ans": "2", "subject": "Math", "group": "Shapes & Patterns", "fact": "", "read": true}, {"id": "K-85", "g": "K", "skill": "Time", "lvl": 3, "prompt": "What day comes before Wednesday?", "display": "❓, Wednesday", "opts": ["Monday", "Tuesday", "Thursday", "Sunday"], "ans": "Tuesday", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "K-86", "g": "K", "skill": "Time", "lvl": 3, "prompt": "What time does the clock show?", "display": "🕐", "opts": ["12 o'clock", "1 o'clock", "2 o'clock", "3 o'clock"], "ans": "1 o'clock", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "G1-53", "g": "1", "skill": "Addition", "lvl": 3, "prompt": "What is 8 plus 6?", "display": "8 + 6", "opts": ["13", "14", "15", "16"], "ans": "14", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-54", "g": "1", "skill": "Addition", "lvl": 3, "prompt": "What is 7 plus 8?", "display": "7 + 8", "opts": ["14", "15", "16", "17"], "ans": "15", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-55", "g": "1", "skill": "Addition", "lvl": 3, "prompt": "What is 15 plus 4?", "display": "15 + 4", "opts": ["18", "19", "20", "21"], "ans": "19", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-56", "g": "1", "skill": "Addition", "lvl": 3, "prompt": "What is 20 plus 30?", "display": "20 + 30", "opts": ["23", "40", "50", "60"], "ans": "50", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-57", "g": "1", "skill": "Addition", "lvl": 3, "prompt": "Ben has 6 cars. He gets 3 more, and then 2 more. How many cars does Ben have now?", "display": "🚗🚗🚗🚗🚗🚗 + 🚗🚗🚗 + 🚗🚗", "opts": ["9", "10", "11", "12"], "ans": "11", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-58", "g": "1", "skill": "Subtraction", "lvl": 3, "prompt": "What is 17 minus 9?", "display": "17 − 9", "opts": ["7", "8", "9", "10"], "ans": "8", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-59", "g": "1", "skill": "Subtraction", "lvl": 3, "prompt": "What is 16 minus 7?", "display": "16 − 7", "opts": ["8", "9", "10", "11"], "ans": "9", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-60", "g": "1", "skill": "Subtraction", "lvl": 3, "prompt": "What is 40 minus 10?", "display": "40 − 10", "opts": ["4", "20", "30", "50"], "ans": "30", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-61", "g": "1", "skill": "Subtraction", "lvl": 3, "prompt": "Nia has 15 grapes. She eats 6, and then she eats 3 more. How many grapes are left?", "display": "🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇", "opts": ["5", "6", "7", "8"], "ans": "6", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-62", "g": "1", "skill": "Missing number", "lvl": 3, "prompt": "What number makes this true? 8 plus what equals 15?", "display": "8 + ❓ = 15", "opts": ["6", "7", "8", "9"], "ans": "7", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-63", "g": "1", "skill": "Missing number", "lvl": 3, "prompt": "What number makes this true? What number minus 5 equals 9?", "display": "❓ − 5 = 9", "opts": ["4", "13", "14", "15"], "ans": "14", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-64", "g": "1", "skill": "Fact families", "lvl": 3, "prompt": "Which one belongs with 6 + 7 = 13?", "display": "6 + 7 = 13", "opts": ["13 − 7 = 6", "13 + 7 = 20", "7 − 6 = 1", "6 − 7 = 13"], "ans": "13 − 7 = 6", "subject": "Math", "group": "Add & Subtract", "fact": "", "read": true}, {"id": "G1-65", "g": "1", "skill": "Place value", "lvl": 3, "prompt": "What number is 3 tens and 5 ones?", "display": "3 tens + 5 ones", "opts": ["53", "35", "8", "305"], "ans": "35", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "G1-66", "g": "1", "skill": "Place value", "lvl": 3, "prompt": "What number is 10 more than 47?", "display": "47 + 10", "opts": ["48", "57", "147", "37"], "ans": "57", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "G1-67", "g": "1", "skill": "Place value", "lvl": 3, "prompt": "What number is 10 less than 62?", "display": "62 − 10", "opts": ["52", "61", "63", "72"], "ans": "52", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "G1-68", "g": "1", "skill": "Compare numbers", "lvl": 3, "prompt": "Which sign makes this true? Fourteen, is what, nine?", "display": "14 ❓ 9", "opts": ["<", ">", "="], "ans": ">", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "G1-69", "g": "1", "skill": "Compare numbers", "lvl": 3, "prompt": "Which number is the biggest?", "display": "", "opts": ["29", "92", "79", "97"], "ans": "97", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "G1-70", "g": "1", "skill": "Skip counting", "lvl": 3, "prompt": "Count by fives. What number is missing?", "display": "25, 30, ❓, 40", "opts": ["33", "35", "36", "45"], "ans": "35", "subject": "Math", "group": "Counting & Numbers", "fact": "", "read": true}, {"id": "G1-71", "g": "1", "skill": "Time", "lvl": 3, "prompt": "What time does the clock show?", "display": "🕧", "opts": ["12 o'clock", "12:30", "1:30", "11:30"], "ans": "12:30", "subject": "Math", "group": "Measure & Time", "fact": "", "read": true}, {"id": "AN-K-01", "g": "K", "skill": "Animal homes", "lvl": 1, "prompt": "Which animal lives in the ocean?", "display": "🌊", "opts": ["🐟 fish", "🐄 cow", "🐔 chicken"], "ans": "🐟 fish", "subject": "Animals", "group": "Homes & Habitats", "fact": "Fish breathe underwater using gills.", "read": true}, {"id": "AN-K-02", "g": "K", "skill": "Animal homes", "lvl": 1, "prompt": "Which animal lives on a farm?", "display": "🚜", "opts": ["🐄 cow", "🦁 lion", "🐧 penguin"], "ans": "🐄 cow", "subject": "Animals", "group": "Homes & Habitats", "fact": "A cow's stomach has four parts.", "read": true}, {"id": "AN-K-03", "g": "K", "skill": "Animal homes", "lvl": 2, "prompt": "Which animal lives in very cold places, like ice and snow?", "display": "❄️", "opts": ["🐧 penguin", "🐪 camel", "🦒 giraffe"], "ans": "🐧 penguin", "subject": "Animals", "group": "Homes & Habitats", "fact": "Penguins have thick feathers and fat to stay warm.", "read": true}, {"id": "AN-K-04", "g": "K", "skill": "Animal homes", "lvl": 2, "prompt": "Where does a bird build its nest?", "display": "🪺", "opts": ["in a tree", "in the ocean", "under the sand"], "ans": "in a tree", "subject": "Animals", "group": "Homes & Habitats", "fact": "Many birds build nests from twigs, grass and feathers.", "read": true}, {"id": "AN-K-05", "g": "K", "skill": "Animal homes", "lvl": 2, "prompt": "Which animal lives in the hot, dry desert?", "display": "🏜️", "opts": ["🐪 camel", "🐧 penguin", "🐟 fish"], "ans": "🐪 camel", "subject": "Animals", "group": "Homes & Habitats", "fact": "A camel's hump stores fat, not water.", "read": true}, {"id": "AN-K-06", "g": "K", "skill": "Animal homes", "lvl": 3, "prompt": "Which animal lives in the jungle and climbs trees?", "display": "🌴", "opts": ["🐒 monkey", "🐄 cow", "🐋 whale", "🐪 camel"], "ans": "🐒 monkey", "subject": "Animals", "group": "Homes & Habitats", "fact": "Monkeys use their long arms and strong hands to climb.", "read": true}, {"id": "AN-K-07", "g": "K", "skill": "Animal homes", "lvl": 3, "prompt": "Where does a bee live?", "display": "🐝", "opts": ["a hive", "a den", "a pond", "a cave"], "ans": "a hive", "subject": "Animals", "group": "Homes & Habitats", "fact": "Thousands of bees can live together in one hive.", "read": true}, {"id": "AN-K-08", "g": "K", "skill": "Animal homes", "lvl": 3, "prompt": "Which animal lives in a pond and says quack?", "display": "🦆", "opts": ["🦆 duck", "🐄 cow", "🐺 wolf", "🐘 elephant"], "ans": "🦆 duck", "subject": "Animals", "group": "Homes & Habitats", "fact": "Ducks have waterproof feathers.", "read": true}, {"id": "AN-G1-01", "g": "1", "skill": "Animal homes", "lvl": 3, "prompt": "Which animal is a mammal that lives in the ocean?", "display": "🌊", "opts": ["🐋 whale", "🦈 shark", "🐙 octopus", "🐠 fish"], "ans": "🐋 whale", "subject": "Animals", "group": "Homes & Habitats", "fact": "Whales breathe air through a blowhole on top of their head.", "read": true}, {"id": "AN-G1-02", "g": "1", "skill": "Animal homes", "lvl": 3, "prompt": "Which animal digs an underground home called a burrow?", "display": "🕳️", "opts": ["🐰 rabbit", "🐦 bird", "🐟 fish", "🦒 giraffe"], "ans": "🐰 rabbit", "subject": "Animals", "group": "Homes & Habitats", "fact": "Rabbits live in underground homes called burrows.", "read": true}, {"id": "AN-G1-03", "g": "1", "skill": "Animal homes", "lvl": 3, "prompt": "Which animal can live on land and in water?", "display": "🌿", "opts": ["🐸 frog", "🐄 cow", "🐔 chicken", "🦁 lion"], "ans": "🐸 frog", "subject": "Animals", "group": "Homes & Habitats", "fact": "Frogs begin life in water as tadpoles, and later live on land too.", "read": true}, {"id": "AN-G1-04", "g": "1", "skill": "Animal homes", "lvl": 3, "prompt": "Which animal lives where it is icy and cold, in the Arctic?", "display": "🧊", "opts": ["🐻 polar bear", "🐘 elephant", "🦓 zebra", "🐪 camel"], "ans": "🐻 polar bear", "subject": "Animals", "group": "Homes & Habitats", "fact": "Polar bears have black skin under their white-looking fur.", "read": true}, {"id": "AN-K-09", "g": "K", "skill": "Animal bodies", "lvl": 1, "prompt": "Which animal eats bananas?", "display": "🍌", "opts": ["🐒 monkey", "🐟 fish", "🦁 lion"], "ans": "🐒 monkey", "subject": "Animals", "group": "Food & Bodies", "fact": "Monkeys also eat fruit, leaves and bugs.", "read": true}, {"id": "AN-K-10", "g": "K", "skill": "Animal bodies", "lvl": 1, "prompt": "Which animal has a long trunk?", "display": "", "opts": ["🐘 elephant", "🐈 cat", "🐇 rabbit"], "ans": "🐘 elephant", "subject": "Animals", "group": "Food & Bodies", "fact": "An elephant uses its trunk to drink, smell and grab things.", "read": true}, {"id": "AN-K-11", "g": "K", "skill": "Animal bodies", "lvl": 2, "prompt": "Which animal has a very long neck?", "display": "", "opts": ["🦒 giraffe", "🐷 pig", "🐢 turtle"], "ans": "🦒 giraffe", "subject": "Animals", "group": "Food & Bodies", "fact": "A giraffe's long neck helps it reach leaves high up in trees.", "read": true}, {"id": "AN-K-12", "g": "K", "skill": "Animal food", "lvl": 2, "prompt": "What do cows eat?", "display": "🐄", "opts": ["🌿 grass", "🍖 meat", "🐟 fish"], "ans": "🌿 grass", "subject": "Animals", "group": "Food & Bodies", "fact": "Cows eat grass and hay.", "read": true}, {"id": "AN-K-13", "g": "K", "skill": "Animal bodies", "lvl": 2, "prompt": "Which animal has a shell on its back?", "display": "", "opts": ["🐢 turtle", "🐶 dog", "🐦 bird"], "ans": "🐢 turtle", "subject": "Animals", "group": "Food & Bodies", "fact": "A turtle's shell is part of its body. It cannot take it off.", "read": true}, {"id": "AN-K-14", "g": "K", "skill": "Animal food", "lvl": 3, "prompt": "Which animal is a carnivore, which means it eats meat?", "display": "🍖", "opts": ["🦁 lion", "🐄 cow", "🐰 rabbit", "🐘 elephant"], "ans": "🦁 lion", "subject": "Animals", "group": "Food & Bodies", "fact": "Lions hunt together to catch their food.", "read": true}, {"id": "AN-K-15", "g": "K", "skill": "Animal bodies", "lvl": 3, "prompt": "Which animal has feathers and can fly?", "display": "🪶", "opts": ["🐦 bird", "🐟 fish", "🐢 turtle", "🐄 cow"], "ans": "🐦 bird", "subject": "Animals", "group": "Food & Bodies", "fact": "Birds are the only animals with feathers.", "read": true}, {"id": "AN-G1-05", "g": "1", "skill": "Animal bodies", "lvl": 3, "prompt": "Which animal can change its color?", "display": "🌈", "opts": ["🦎 chameleon", "🐶 dog", "🐔 chicken", "🐄 cow"], "ans": "🦎 chameleon", "subject": "Animals", "group": "Food & Bodies", "fact": "A chameleon can change color, and its eyes can look in two directions at once.", "read": true}, {"id": "AN-G1-06", "g": "1", "skill": "Animal bodies", "lvl": 3, "prompt": "How many legs does an insect have?", "display": "🐜", "opts": ["4", "6", "8", "10"], "ans": "6", "subject": "Animals", "group": "Food & Bodies", "fact": "All insects have six legs.", "read": true}, {"id": "AN-G1-07", "g": "1", "skill": "Animal bodies", "lvl": 3, "prompt": "How many legs does a spider have?", "display": "🕷️", "opts": ["6", "8", "4", "10"], "ans": "8", "subject": "Animals", "group": "Food & Bodies", "fact": "Spiders have eight legs, so they are not insects.", "read": true}, {"id": "AN-G1-08", "g": "1", "skill": "Animal food", "lvl": 3, "prompt": "What do bees collect from flowers to make honey?", "display": "🐝", "opts": ["nectar", "sand", "leaves", "seeds"], "ans": "nectar", "subject": "Animals", "group": "Food & Bodies", "fact": "Bees drink nectar from flowers and turn it into honey.", "read": true}, {"id": "AN-G1-09", "g": "1", "skill": "Animal bodies", "lvl": 3, "prompt": "Which animal sleeps hanging upside down?", "display": "🌙", "opts": ["🦇 bat", "🐘 elephant", "🐢 turtle", "🐄 cow"], "ans": "🦇 bat", "subject": "Animals", "group": "Food & Bodies", "fact": "Bats hang upside down to rest, and come out at night.", "read": true}, {"id": "AN-K-16", "g": "K", "skill": "Animal sounds", "lvl": 1, "prompt": "Which animal says moo?", "display": "", "opts": ["🐄 cow", "🐶 dog", "🐱 cat"], "ans": "🐄 cow", "subject": "Animals", "group": "Babies & Sounds", "fact": "Cows can moo to talk to their calves and each other.", "read": true}, {"id": "AN-K-17", "g": "K", "skill": "Animal sounds", "lvl": 1, "prompt": "Which animal says meow?", "display": "", "opts": ["🐱 cat", "🐶 dog", "🐔 chicken"], "ans": "🐱 cat", "subject": "Animals", "group": "Babies & Sounds", "fact": "Cats meow to talk to people.", "read": true}, {"id": "AN-K-18", "g": "K", "skill": "Baby animals", "lvl": 1, "prompt": "What is a baby dog called?", "display": "🐶", "opts": ["puppy", "kitten", "chick"], "ans": "puppy", "subject": "Animals", "group": "Babies & Sounds", "fact": "Puppies are born with their eyes closed.", "read": true}, {"id": "AN-K-19", "g": "K", "skill": "Baby animals", "lvl": 2, "prompt": "What is a baby cat called?", "display": "🐱", "opts": ["kitten", "puppy", "cub"], "ans": "kitten", "subject": "Animals", "group": "Babies & Sounds", "fact": "Kittens can sleep up to sixteen hours a day.", "read": true}, {"id": "AN-K-20", "g": "K", "skill": "Baby animals", "lvl": 3, "prompt": "What is a baby cow called?", "display": "🐄", "opts": ["calf", "lamb", "foal", "cub"], "ans": "calf", "subject": "Animals", "group": "Babies & Sounds", "fact": "A calf can stand up soon after it is born.", "read": true}, {"id": "AN-K-21", "g": "K", "skill": "Baby animals", "lvl": 3, "prompt": "What is a baby chicken called?", "display": "🐔", "opts": ["chick", "calf", "kid", "pup"], "ans": "chick", "subject": "Animals", "group": "Babies & Sounds", "fact": "A chick hatches from an egg.", "read": true}, {"id": "AN-K-22", "g": "K", "skill": "Baby animals", "lvl": 3, "prompt": "What is a baby horse called?", "display": "🐴", "opts": ["foal", "calf", "kid", "lamb"], "ans": "foal", "subject": "Animals", "group": "Babies & Sounds", "fact": "A foal can walk within hours of being born.", "read": true}, {"id": "AN-G1-10", "g": "1", "skill": "Baby animals", "lvl": 3, "prompt": "What is a baby sheep called?", "display": "🐑", "opts": ["lamb", "calf", "cub", "foal"], "ans": "lamb", "subject": "Animals", "group": "Babies & Sounds", "fact": "A mother sheep is called a ewe.", "read": true}, {"id": "AN-G1-11", "g": "1", "skill": "Baby animals", "lvl": 3, "prompt": "What is a baby frog called?", "display": "🐸", "opts": ["tadpole", "puppy", "cub", "chick"], "ans": "tadpole", "subject": "Animals", "group": "Babies & Sounds", "fact": "A tadpole grows legs and turns into a frog.", "read": true}, {"id": "AN-G1-12", "g": "1", "skill": "Baby animals", "lvl": 3, "prompt": "What is a baby lion called?", "display": "🦁", "opts": ["cub", "calf", "lamb", "foal"], "ans": "cub", "subject": "Animals", "group": "Babies & Sounds", "fact": "Lion cubs have faint spots when they are born.", "read": true}, {"id": "AN-G1-13", "g": "1", "skill": "Life cycles", "lvl": 3, "prompt": "A caterpillar changes into what?", "display": "🐛", "opts": ["butterfly", "spider", "frog", "bee"], "ans": "butterfly", "subject": "Animals", "group": "Babies & Sounds", "fact": "A caterpillar wraps itself in a chrysalis and changes into a butterfly.", "read": true}, {"id": "AN-G1-14", "g": "1", "skill": "Life cycles", "lvl": 3, "prompt": "Which animal hatches from an egg?", "display": "🥚", "opts": ["🐔 chicken", "🐶 dog", "🐱 cat", "🐄 cow"], "ans": "🐔 chicken", "subject": "Animals", "group": "Babies & Sounds", "fact": "Birds, fish, turtles and many insects hatch from eggs.", "read": true}, {"id": "RD-K-01", "g": "K", "skill": "Beginning sounds", "lvl": 1, "prompt": "Which picture starts with the letter B?", "display": "Bb", "opts": ["🐻 bear", "🐟 fish", "🐱 cat"], "ans": "🐻 bear", "subject": "Reading", "group": "Sounds & Rhymes", "fact": "", "read": true}, {"id": "RD-K-02", "g": "K", "skill": "Beginning sounds", "lvl": 1, "prompt": "Which picture starts with the letter S?", "display": "Ss", "opts": ["☀️ sun", "🐶 dog", "🍎 apple"], "ans": "☀️ sun", "subject": "Reading", "group": "Sounds & Rhymes", "fact": "", "read": true}, {"id": "RD-K-03", "g": "K", "skill": "Rhyming", "lvl": 1, "prompt": "Which word rhymes with cat?", "display": "", "opts": ["🎩 hat", "🐶 dog", "🌞 sun"], "ans": "🎩 hat", "subject": "Reading", "group": "Sounds & Rhymes", "fact": "", "read": true}, {"id": "RD-K-04", "g": "K", "skill": "Letter names", "lvl": 1, "prompt": "Tap the letter A.", "display": "", "opts": ["A", "M", "T"], "ans": "A", "subject": "Reading", "group": "Sounds & Rhymes", "fact": "", "read": false}, {"id": "RD-K-05", "g": "K", "skill": "Beginning sounds", "lvl": 2, "prompt": "Which picture starts with the letter M?", "display": "Mm", "opts": ["🌙 moon", "🐟 fish", "🐸 frog"], "ans": "🌙 moon", "subject": "Reading", "group": "Sounds & Rhymes", "fact": "", "read": true}, {"id": "RD-K-06", "g": "K", "skill": "Rhyming", "lvl": 2, "prompt": "Which word rhymes with dog?", "display": "", "opts": ["🐸 frog", "🐱 cat", "🐟 fish"], "ans": "🐸 frog", "subject": "Reading", "group": "Sounds & Rhymes", "fact": "", "read": true}, {"id": "RD-K-07", "g": "K", "skill": "Rhyming", "lvl": 2, "prompt": "Which word rhymes with sun?", "display": "", "opts": ["🏃 run", "🐝 bee", "🌳 tree"], "ans": "🏃 run", "subject": "Reading", "group": "Sounds & Rhymes", "fact": "", "read": true}, {"id": "RD-K-08", "g": "K", "skill": "Syllables", "lvl": 2, "prompt": "How many claps are in the word apple?", "display": "🍎", "opts": ["1", "2", "3"], "ans": "2", "subject": "Reading", "group": "Sounds & Rhymes", "fact": "", "read": true}, {"id": "RD-K-09", "g": "K", "skill": "Rhyming", "lvl": 3, "prompt": "Which two words rhyme?", "display": "", "opts": ["bee and tree", "cat and dog", "sun and moon", "fish and bird"], "ans": "bee and tree", "subject": "Reading", "group": "Sounds & Rhymes", "fact": "", "read": true}, {"id": "RD-K-10", "g": "K", "skill": "Rhyming", "lvl": 3, "prompt": "Which word rhymes with cake?", "display": "", "opts": ["🐍 snake", "🐱 cat", "🐶 dog", "🦆 duck"], "ans": "🐍 snake", "subject": "Reading", "group": "Sounds & Rhymes", "fact": "", "read": true}, {"id": "RD-K-11", "g": "K", "skill": "Letter names", "lvl": 3, "prompt": "What is the first letter of the word zebra?", "display": "🦓", "opts": ["Z", "S", "X", "B"], "ans": "Z", "subject": "Reading", "group": "Sounds & Rhymes", "fact": "", "read": false}, {"id": "RD-G1-01", "g": "1", "skill": "Beginning sounds", "lvl": 3, "prompt": "Which picture starts with the same sound as ship?", "display": "🚢", "opts": ["🐑 sheep", "🌞 sun", "🐍 snake", "🐟 fish"], "ans": "🐑 sheep", "subject": "Reading", "group": "Sounds & Rhymes", "fact": "", "read": true}, {"id": "RD-G1-02", "g": "1", "skill": "Ending sounds", "lvl": 3, "prompt": "Which word ends with the same sound as cat?", "display": "", "opts": ["🎩 hat", "🐶 dog", "🐷 pig", "🌞 sun"], "ans": "🎩 hat", "subject": "Reading", "group": "Sounds & Rhymes", "fact": "", "read": true}, {"id": "RD-G1-03", "g": "1", "skill": "Syllables", "lvl": 3, "prompt": "How many claps are in the word elephant?", "display": "🐘", "opts": ["2", "3", "4", "5"], "ans": "3", "subject": "Reading", "group": "Sounds & Rhymes", "fact": "", "read": true}, {"id": "RD-K-12", "g": "K", "skill": "Sight words", "lvl": 1, "prompt": "Which word says the?", "display": "", "opts": ["the", "cat", "go"], "ans": "the", "subject": "Reading", "group": "Words", "fact": "", "read": false}, {"id": "RD-K-13", "g": "K", "skill": "Reading words", "lvl": 1, "prompt": "Which word says cat?", "display": "🐱", "opts": ["cat", "cot", "cut"], "ans": "cat", "subject": "Reading", "group": "Words", "fact": "", "read": false}, {"id": "RD-K-14", "g": "K", "skill": "Reading words", "lvl": 1, "prompt": "Which word names this picture?", "display": "🚌", "opts": ["bus", "bug", "bun", "buy"], "ans": "bus", "subject": "Reading", "group": "Words", "fact": "", "read": false}, {"id": "RD-K-15", "g": "K", "skill": "Reading words", "lvl": 2, "prompt": "Which word says dog?", "display": "🐶", "opts": ["dog", "dig", "dug"], "ans": "dog", "subject": "Reading", "group": "Words", "fact": "", "read": false}, {"id": "RD-K-16", "g": "K", "skill": "Reading words", "lvl": 2, "prompt": "Which word names this picture?", "display": "🐟", "opts": ["fish", "dish", "fist", "fin"], "ans": "fish", "subject": "Reading", "group": "Words", "fact": "", "read": false}, {"id": "RD-K-17", "g": "K", "skill": "Word meanings", "lvl": 2, "prompt": "Which word is the opposite of hot?", "display": "", "opts": ["cold", "warm", "soft", "big"], "ans": "cold", "subject": "Reading", "group": "Words", "fact": "", "read": true}, {"id": "RD-G1-04", "g": "1", "skill": "Sight words", "lvl": 3, "prompt": "Which word says said?", "display": "", "opts": ["said", "sad", "say", "sit"], "ans": "said", "subject": "Reading", "group": "Words", "fact": "", "read": false}, {"id": "RD-G1-05", "g": "1", "skill": "Sight words", "lvl": 3, "prompt": "Which word says they?", "display": "", "opts": ["they", "then", "them", "the"], "ans": "they", "subject": "Reading", "group": "Words", "fact": "", "read": false}, {"id": "RD-G1-06", "g": "1", "skill": "Sight words", "lvl": 3, "prompt": "Which word says was?", "display": "", "opts": ["was", "saw", "wash", "has"], "ans": "was", "subject": "Reading", "group": "Words", "fact": "", "read": false}, {"id": "RD-G1-07", "g": "1", "skill": "Sight words", "lvl": 3, "prompt": "Which word says went?", "display": "", "opts": ["went", "want", "what", "when"], "ans": "went", "subject": "Reading", "group": "Words", "fact": "", "read": false}, {"id": "RD-G1-08", "g": "1", "skill": "Reading words", "lvl": 3, "prompt": "Which word says little?", "display": "", "opts": ["little", "letter", "lit", "list"], "ans": "little", "subject": "Reading", "group": "Words", "fact": "", "read": false}, {"id": "RD-G1-09", "g": "1", "skill": "Reading words", "lvl": 3, "prompt": "Which word names this picture?", "display": "🐸", "opts": ["frog", "from", "fog", "flag"], "ans": "frog", "subject": "Reading", "group": "Words", "fact": "", "read": false}, {"id": "RD-G1-10", "g": "1", "skill": "Word meanings", "lvl": 3, "prompt": "Which word is the opposite of fast?", "display": "", "opts": ["slow", "quick", "run", "big"], "ans": "slow", "subject": "Reading", "group": "Words", "fact": "", "read": true}, {"id": "RD-G1-11", "g": "1", "skill": "Word meanings", "lvl": 3, "prompt": "Which word means the same as big?", "display": "", "opts": ["large", "tiny", "small", "short"], "ans": "large", "subject": "Reading", "group": "Words", "fact": "", "read": true}, {"id": "RD-K-18", "g": "K", "skill": "Listening", "lvl": 1, "prompt": "Listen. The cat is on the mat. Where is the cat?", "display": "The cat is on the mat.", "opts": ["on the mat", "in the tub", "at the park"], "ans": "on the mat", "subject": "Reading", "group": "Sentences", "fact": "", "read": true}, {"id": "RD-K-19", "g": "K", "skill": "Listening", "lvl": 1, "prompt": "Listen. I see a red ball. What do I see?", "display": "I see a red ball.", "opts": ["🔴 a red ball", "🔵 a blue car", "🟢 a green frog"], "ans": "🔴 a red ball", "subject": "Reading", "group": "Sentences", "fact": "", "read": true}, {"id": "RD-K-20", "g": "K", "skill": "Reading sentences", "lvl": 2, "prompt": "Listen. Sam has a big dog. The dog runs fast. What does the dog do?", "display": "Sam has a big dog. The dog runs fast.", "opts": ["runs", "sleeps", "swims"], "ans": "runs", "subject": "Reading", "group": "Sentences", "fact": "", "read": true}, {"id": "RD-K-21", "g": "K", "skill": "Fill in the blank", "lvl": 2, "prompt": "Which word finishes the sentence? The sun is blank.", "display": "The sun is ___.", "opts": ["hot", "wet", "soft"], "ans": "hot", "subject": "Reading", "group": "Sentences", "fact": "", "read": true}, {"id": "RD-K-22", "g": "K", "skill": "Fill in the blank", "lvl": 2, "prompt": "Which word finishes the sentence? A fish can blank.", "display": "A fish can ___.", "opts": ["swim", "walk", "fly", "bark"], "ans": "swim", "subject": "Reading", "group": "Sentences", "fact": "", "read": true}, {"id": "RD-K-23", "g": "K", "skill": "Feelings", "lvl": 2, "prompt": "Listen. Tom dropped his ice cream. He started to cry. How does Tom feel?", "display": "Tom dropped his ice cream. He started to cry.", "opts": ["😢 sad", "😀 happy", "😴 sleepy", "🤩 excited"], "ans": "😢 sad", "subject": "Reading", "group": "Sentences", "fact": "", "read": true}, {"id": "RD-G1-12", "g": "1", "skill": "Story questions", "lvl": 3, "prompt": "Listen. Mia put on her coat and hat. Then she went outside to play in the snow. What was the weather like?", "display": "Mia put on her coat and hat. Then she went outside to play in the snow.", "opts": ["❄️ snowy", "☀️ sunny", "🌧️ rainy", "🌬️ windy"], "ans": "❄️ snowy", "subject": "Reading", "group": "Sentences", "fact": "", "read": true}, {"id": "RD-G1-13", "g": "1", "skill": "Story questions", "lvl": 3, "prompt": "Listen. Jo had a big red kite. The wind blew it up high. What did the wind do?", "display": "Jo had a big red kite. The wind blew it up high.", "opts": ["blew the kite up high", "broke the kite", "hid the kite", "ate the kite"], "ans": "blew the kite up high", "subject": "Reading", "group": "Sentences", "fact": "", "read": true}, {"id": "RD-G1-14", "g": "1", "skill": "Story order", "lvl": 3, "prompt": "Listen. First Dad cracked the eggs. Next he cooked them. Last we ate. What did Dad do first?", "display": "First Dad cracked the eggs. Next he cooked them. Last we ate.", "opts": ["cracked the eggs", "cooked the eggs", "ate the eggs", "washed the pan"], "ans": "cracked the eggs", "subject": "Reading", "group": "Sentences", "fact": "", "read": true}, {"id": "RD-G1-15", "g": "1", "skill": "Sentence building", "lvl": 3, "prompt": "Which sentence is correct?", "display": "", "opts": ["The dog runs fast.", "dog the fast runs", "fast dog runs the", "runs the dog fast"], "ans": "The dog runs fast.", "subject": "Reading", "group": "Sentences", "fact": "", "read": true}, {"id": "RD-G1-16", "g": "1", "skill": "Punctuation", "lvl": 3, "prompt": "Which sentence ends with a question mark?", "display": "", "opts": ["Where is my hat?", "I like cake.", "The sky is blue.", "Run to me!"], "ans": "Where is my hat?", "subject": "Reading", "group": "Sentences", "fact": "", "read": true}, {"id": "RD-G1-17", "g": "1", "skill": "Story questions", "lvl": 3, "prompt": "Listen. Dark clouds filled the sky. Pia took her umbrella. Why did Pia take an umbrella?", "display": "Dark clouds filled the sky. Pia took her umbrella.", "opts": ["It might rain", "It was sunny", "It was snowing"], "ans": "It might rain", "subject": "Reading", "group": "Sentences", "fact": "", "read": true}, {"id": "RD-G1-18", "g": "1", "skill": "Main idea", "lvl": 3, "prompt": "Listen. Bees make honey. Bees live in a hive. Bees help flowers grow. What is this story about?", "display": "Bees make honey. Bees live in a hive. Bees help flowers grow.", "opts": ["🐝 bees", "🐄 cows", "🐟 fish", "🌳 trees"], "ans": "🐝 bees", "subject": "Reading", "group": "Sentences", "fact": "", "read": true}, {"id": "RD-G1-19", "g": "1", "skill": "Describing words", "lvl": 3, "prompt": "Which word tells how the cat looks? The fluffy cat sat.", "display": "The fluffy cat sat.", "opts": ["fluffy", "sat", "the", "cat"], "ans": "fluffy", "subject": "Reading", "group": "Sentences", "fact": "", "read": true}];
+/* Paste your Google Sheet "Publish to web" CSV link between the quotes to build it into this file.
+   (Or paste it later in the Grown-up corner of the app.) */
+const DEFAULT_SHEET_URL = '';
+let QUESTIONS = FALLBACK;
+
+/* ---------- start menu: subjects and groups (max 5 choices on any screen) ---------- */
+const SUBJECTS = [
+  {key:'Math', emoji:'🧮', label:'Math', sub:'Numbers, shapes, time', cls:'t2', groups:[
+    {key:'Counting & Numbers', emoji:'🔢', sub:'Count, compare, order'},
+    {key:'Add & Subtract', emoji:'➕', sub:'Plus, minus, missing numbers'},
+    {key:'Shapes & Patterns', emoji:'🔷', sub:'Shapes and what comes next'},
+    {key:'Measure & Time', emoji:'📏', sub:'Sizes, clocks, days'}]},
+  {key:'Animals', emoji:'🦁', label:'Animal Facts', sub:'Fun facts about animals', cls:'t3', groups:[
+    {key:'Homes & Habitats', emoji:'🌳', sub:'Where animals live'},
+    {key:'Food & Bodies', emoji:'🐘', sub:'What animals eat and look like'},
+    {key:'Babies & Sounds', emoji:'🐣', sub:'Baby animals and animal sounds'}]},
+  {key:'Reading', emoji:'📖', label:'Reading', sub:'Letters, words, stories', cls:'t4', groups:[
+    {key:'Sounds & Rhymes', emoji:'🔤', sub:'Letters, sounds, rhymes'},
+    {key:'Words', emoji:'📝', sub:'Sight words and word meanings'},
+    {key:'Sentences', emoji:'📚', sub:'Listen, read and understand'}]}
+];
+const GROUP_BY_SKILL = {"Counting":"Counting & Numbers","Number recognition":"Counting & Numbers","Number order":"Counting & Numbers","Skip counting":"Counting & Numbers",
+  "Place value":"Counting & Numbers","Compare groups":"Counting & Numbers","Compare numbers":"Counting & Numbers","Addition":"Add & Subtract","Subtraction":"Add & Subtract",
+  "Missing number":"Add & Subtract","Making 5":"Add & Subtract","Making 10":"Add & Subtract","Fact families":"Add & Subtract","Equal sides":"Add & Subtract",
+  "Shapes":"Shapes & Patterns","Patterns":"Shapes & Patterns","Measurement":"Measure & Time","Time":"Measure & Time"};
+let scope = {subject:null, group:null, label:'Surprise me'};
+
+/* ---------- storage (safe) ---------- */
+const mem = {};
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem('rishi.'+k); return v===null ? (k in mem ? mem[k] : d) : JSON.parse(v);}catch(e){ return k in mem ? mem[k] : d; } },
+  set(k, v){ mem[k] = v; try{ localStorage.setItem('rishi.'+k, JSON.stringify(v)); }catch(e){} }
+};
+const cfg = Object.assign({name:'Rishi', grade:'K', n:8, voice:true, read:true, sfx:true, rate:0.9, sheetUrl:''}, store.get('cfg', {}));
+const prog = Object.assign({stars:0, rounds:0, best:0, stickers:[], recent:[], stats:{}}, store.get('prog', {}));
+const saveCfg = () => store.set('cfg', cfg);
+const saveProg = () => store.set('prog', prog);
+
+/* ---------- question source: Google Sheet (published CSV) with built-in backup ---------- */
+const src = {kind:'builtin', n:FALLBACK.length, t:0, msg:''};
+let pendingQ = null;
+function sheetUrl(){
+  let u = (cfg.sheetUrl || DEFAULT_SHEET_URL || '').trim();
+  if(!u) return '';
+  if(/\/pubhtml/.test(u)) u = u.replace('/pubhtml','/pub') + (u.includes('?')?'&':'?') + 'output=csv';
+  return u;
+}
+function parseCSV(t){
+  t = t.replace(/^\uFEFF/,'');
+  const rows=[]; let row=[], f='', q=false;
+  for(let i=0;i<t.length;i++){
+    const c=t[i];
+    if(q){ if(c==='"'){ if(t[i+1]==='"'){ f+='"'; i++; } else q=false; } else f+=c; }
+    else if(c==='"') q=true;
+    else if(c===','){ row.push(f); f=''; }
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&t[i+1]==='\n') i++; row.push(f); f=''; rows.push(row); row=[]; }
+    else f+=c;
+  }
+  if(f!==''||row.length){ row.push(f); rows.push(row); }
+  return rows;
+}
+function rowsToQuestions(rows){
+  if(!rows.length) return {qs:[], skipped:0};
+  const H = rows[0].map(h=>String(h).trim().toLowerCase());
+  const ix = fn => H.findIndex(fn);
+  const c = {
+    id: ix(h=>h==='id'), g: ix(h=>h==='grade'), skill: ix(h=>h==='skill'), lvl: ix(h=>h==='level'),
+    prompt: ix(h=>h.startsWith('question')), disp: ix(h=>h.startsWith('picture')),
+    ans: ix(h=>h.startsWith('correct')), status: ix(h=>h==='status'),
+    subj: ix(h=>h==='subject'), grp: ix(h=>h==='group'), fact: ix(h=>h.startsWith('fun fact')), read: ix(h=>h.startsWith('read options')),
+    o: [1,2,3,4].map(n=>ix(h=>h==='option '+n))
+  };
+  const qs = []; let skipped = 0;
+  rows.slice(1).forEach((r,k)=>{
+    const get = i => i>=0 && r[i]!==undefined ? String(r[i]).trim() : '';
+    if(!get(c.prompt) && !get(c.ans)) return;                       // blank row
+    if(get(c.status).toLowerCase()==='remove') return;
+    const gr = get(c.g).toUpperCase();
+    const g = /^K/.test(gr) ? 'K' : /^(1|G1|GRADE 1)/.test(gr) ? '1' : '';
+    const opts = c.o.map(get).filter(Boolean);
+    const ans = get(c.ans);
+    let lvl = parseInt(get(c.lvl),10); if(!(lvl>=1 && lvl<=3)) lvl = 2;
+    if(!g || !get(c.prompt) || opts.length<2 || !opts.includes(ans)){ skipped++; return; }
+    const sj = get(c.subj); const subject = /anim/i.test(sj) ? 'Animals' : /read|eng/i.test(sj) ? 'Reading' : 'Math';
+    const skill = get(c.skill) || 'Math';
+    const group = get(c.grp) || (subject==='Math' ? (GROUP_BY_SKILL[skill]||'') : '');
+    qs.push({id:get(c.id)||('S'+(k+1)), g, skill, lvl, prompt:get(c.prompt), display:get(c.disp), opts, ans, subject, group,
+             fact:get(c.fact), read: !/^(no|n|false|0)$/i.test(get(c.read))});
+  });
+  return {qs, skipped};
+}
+async function loadSheet(){
+  const url = sheetUrl();
+  if(!url){ src.kind='builtin'; src.n=FALLBACK.length; src.msg=''; return false; }
+  if(!/^https:\/\//i.test(url)){ src.msg='The link must start with https://'; return false; }
+  try{
+    const res = await fetch(url + (url.includes('?')?'&':'?') + '_=' + Date.now(), {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const text = await res.text();
+    if(/^\s*<(!doctype|html)/i.test(text)) throw new Error('got a web page, not CSV. Publish the sheet as CSV');
+    const {qs, skipped} = rowsToQuestions(parseCSV(text));
+    if(qs.length<10) throw new Error('only '+qs.length+' usable questions found');
+    pendingQ = qs; src.kind='sheet'; src.n=qs.length; src.t=Date.now();
+    src.msg = skipped ? `${skipped} rows skipped because the correct answer doesn't match an option.` : '';
+    store.set('sheetCache', {t:src.t, qs, url});
+    if(!round || !$('play').classList.contains('on')) applyPending();
+    return true;
+  }catch(e){
+    src.msg = 'Could not load the sheet (' + (e && e.message || e) + '). Using the last saved questions.';
+    return false;
+  }
+}
+function applyPending(){ if(pendingQ){ QUESTIONS = pendingQ; pendingQ = null; } }
+function initQuestions(){
+  const url = sheetUrl();
+  const cache = store.get('sheetCache', null);
+  if(url && cache && cache.url===url && Array.isArray(cache.qs) && cache.qs.length>=10){
+    QUESTIONS = cache.qs; src.kind='sheet'; src.n=cache.qs.length; src.t=cache.t;
+  }
+  loadSheet().then(()=>{ if($('setModal').classList.contains('on')) paintSrc(); if($('home').classList.contains('on')) refreshHome(); });
+}
+function paintSrc(){
+  const el = $('srcStatus'); if(!el) return;
+  const when = src.t ? new Date(src.t).toLocaleString([], {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}) : '';
+  el.textContent = (src.kind==='sheet'
+    ? `Using your Google Sheet · ${src.n} questions · checked ${when}`
+    : `Using the built-in questions (${FALLBACK.length}). Paste your sheet link below to use your own.`)
+    + (src.msg ? ' ' + src.msg : '');
+}
+
+const $ = id => document.getElementById(id);
+const rand = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const STICKERS = ["🦕","🦖","🐘","🦁","🐼","🐯","🦒","🐬","🦊","🐙","🦈","🦉","🚀","🛸","🪐","🌙","☄️","👨‍🚀","🚒","🚜","🏎️","🚁","🦸","🦸‍♂️","⚡","🛡️","🌈","🐢","🦋","🐧"];
+const PRAISE = ["Great job!","You got it!","Super!","Yes! Awesome!","Amazing!","Fantastic!","Way to go!","Hooray!","You're so smart!"];
+const TRY = ["Oops! Try again!","Almost! Try again!","Hmm, try another one!","You can do it! Try again!"];
+
+/* ---------- sound effects ---------- */
+let ac;
+function tone(f, t0, dur, type='sine', vol=.16){
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.value = f;
+  g.gain.setValueAtTime(0.0001, ac.currentTime+t0);
+  g.gain.exponentialRampToValueAtTime(vol, ac.currentTime+t0+.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime+t0+dur);
+  o.connect(g); g.connect(ac.destination);
+  o.start(ac.currentTime+t0); o.stop(ac.currentTime+t0+dur+.05);
+}
+function sfx(kind){
+  if(!cfg.sfx) return;
+  try{
+    ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+    if(ac.state==='suspended') ac.resume();
+    if(kind==='right'){ [523,659,784,1047].forEach((f,i)=>tone(f,i*.09,.25,'triangle')); }
+    else if(kind==='wrong'){ tone(330,0,.18,'sine',.12); tone(262,.16,.28,'sine',.12); }
+    else if(kind==='pop'){ tone(700,0,.08,'triangle',.12); }
+    else if(kind==='done'){ [523,523,523,659,784,659,784,1047].forEach((f,i)=>tone(f,i*.13,.3,'triangle',.15)); }
+  }catch(e){}
+}
+
+/* ---------- speech ---------- */
+let voice = null, speakToken = 0;
+function pickVoice(){
+  if(!('speechSynthesis' in window)) return;
+  const vs = speechSynthesis.getVoices();
+  voice = vs.find(v=>/^en[-_]US/i.test(v.lang) && /google|samantha|zira|female/i.test(v.name))
+       || vs.find(v=>/^en[-_]US/i.test(v.lang)) || vs.find(v=>/^en/i.test(v.lang)) || null;
+}
+if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+const clean = s => String(s).replace(/[−–]/g,' minus ').replace(/\+/g,' plus ').replace(/=/g,' equals ').replace(/>/g,' greater than ').replace(/</g,' less than ')
+  .replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu,'').replace(/\s+/g,' ').trim();
+function say(list){
+  const items = (Array.isArray(list)?list:[list]).map(clean).filter(Boolean);
+  if(!cfg.voice || !('speechSynthesis' in window) || !items.length) return Promise.resolve();
+  speechSynthesis.cancel();
+  const my = ++speakToken;
+  return new Promise(res=>{
+    items.forEach((t,i)=>{
+      const u = new SpeechSynthesisUtterance(t);
+      if(voice) u.voice = voice;
+      u.lang = (voice && voice.lang) || 'en-US';
+      u.rate = cfg.rate; u.pitch = 1.15;
+      if(i===items.length-1){ u.onend = () => res(); u.onerror = () => res(); }
+      speechSynthesis.speak(u);
+    });
+    setTimeout(()=>{ if(my===speakToken) res(); }, 12000);
+  });
+}
+const stopSpeech = () => { speakToken++; try{ speechSynthesis.cancel(); }catch(e){} };
+
+/* ---------- confetti ---------- */
+const cv = $('fx'), cx = cv.getContext('2d');
+let parts = [], raf = 0;
+function fit(){ cv.width = innerWidth*devicePixelRatio; cv.height = innerHeight*devicePixelRatio; }
+addEventListener('resize', fit); fit();
+function confetti(n=60, x=.5, y=.4, spread=1){
+  const colors = ['#FFC933','#FF6B5B','#3DBE7A','#4CB8FF','#8B5CF6','#FF8FD2'];
+  for(let i=0;i<n;i++){
+    const a = Math.random()*Math.PI*2, s = (4+Math.random()*9)*spread*devicePixelRatio;
+    parts.push({x:x*cv.width,y:y*cv.height,vx:Math.cos(a)*s,vy:Math.sin(a)*s-6*devicePixelRatio,
+      w:(8+Math.random()*8)*devicePixelRatio,h:(5+Math.random()*7)*devicePixelRatio,r:Math.random()*6,vr:(Math.random()-.5)*.4,
+      c:rand(colors),life:90+Math.random()*50});
+  }
+  if(!raf) raf = requestAnimationFrame(tick);
+}
+function tick(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  parts = parts.filter(p=>p.life>0 && p.y<cv.height+40);
+  parts.forEach(p=>{
+    p.vy += .35*devicePixelRatio; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life--;
+    cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r); cx.fillStyle = p.c; cx.globalAlpha = Math.min(1,p.life/30);
+    cx.fillRect(-p.w/2,-p.h/2,p.w,p.h); cx.restore();
+  });
+  raf = parts.length ? requestAnimationFrame(tick) : 0;
+  if(!parts.length) cx.clearRect(0,0,cv.width,cv.height);
+}
+
+/* ---------- screens ---------- */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on', s.id===id));
+  $('gear').style.display = (id==='play') ? 'none' : '';
+}
+function tile(cls, em, label, sub, onClick, extra){
+  const b = document.createElement('button');
+  b.className = 'tile chunk ' + cls + (extra ? ' ' + extra : '');
+  b.innerHTML = `<span class="em">${em}</span><span><span class="lb"></span><span class="sub"></span></span>`;
+  b.querySelector('.lb').textContent = label; b.querySelector('.sub').textContent = sub || '';
+  b.addEventListener('click', ()=>{ sfx('pop'); onClick(); });
+  return b;
+}
+const countIn = sc => QUESTIONS.filter(q => inScope(q, sc)).length;
+function startScope(sc){
+  scope = sc; stopSpeech();
+  say(["Let's play " + sc.label + (cfg.name ? ', ' + cfg.name : '') + '!']);
+  setTimeout(startRound, 1100);
+}
+function buildHome(){
+  const box = $('homeTiles'); box.innerHTML = '';
+  box.appendChild(tile('t1', '🎲', 'Surprise me!', 'A mix of everything', ()=>startScope({subject:null, group:null, label:'Surprise me'})));
+  SUBJECTS.forEach(s=>{
+    if(!countIn({subject:s.key})) return;
+    box.appendChild(tile(s.cls, s.emoji, s.label, s.sub, ()=>openPicker(s)));
+  });
+}
+function openPicker(s){
+  $('pickTitle').textContent = s.emoji + ' ' + s.label;
+  const box = $('pickTiles'); box.innerHTML = '';
+  box.appendChild(tile('t1', '🎲', 'All ' + s.label, 'A mix of everything here', ()=>startScope({subject:s.key, group:null, label:s.label})));
+  const cls = ['t2','t3','t4','t5'];
+  s.groups.forEach((g,i)=>{
+    if(!countIn({subject:s.key, group:g.key})) return;
+    box.appendChild(tile(cls[i%4], g.emoji, g.key, g.sub, ()=>startScope({subject:s.key, group:g.key, label:g.key})));
+  });
+  show('pick');
+}
+function refreshHome(){
+  $('hello').textContent = 'Hi ' + (cfg.name || 'friend') + '!';
+  $('starTotal').textContent = '⭐ ' + prog.stars;
+  buildHome();
+}
+
+/* ---------- hold-to-activate ---------- */
+function holdable(el, ms, fn){
+  let t = null;
+  el.style.setProperty('--hold-ms', ms+'ms');
+  const start = e => { e.preventDefault(); el.classList.add('holding'); clearTimeout(t); t = setTimeout(()=>{ el.classList.remove('holding'); fn(); }, ms); };
+  const end = () => { clearTimeout(t); el.classList.remove('holding'); };
+  el.addEventListener('pointerdown', start);
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>el.addEventListener(ev, end));
+  el.addEventListener('contextmenu', e=>e.preventDefault());
+}
+
+/* ---------- game ---------- */
+let round = null, cur = null;
+
+function startRound(){
+  stopSpeech();
+  applyPending();
+  round = {i:0, stars:0, streak:0, bestStreak:0, level:2, okRun:0, used:new Set(), marks:[]};
+  buildProg();
+  $('score').textContent = '⭐ 0';
+  $('streak').textContent = '';
+  show('play');
+  sfx('pop');
+  nextQuestion(true);
+}
+function buildProg(){
+  const p = $('prog'); p.innerHTML = '';
+  for(let i=0;i<cfg.n;i++){ const d = document.createElement('div'); d.className='dot'; p.appendChild(d); }
+}
+function markProg(){
+  [...$('prog').children].forEach((d,i)=>{
+    d.className = 'dot' + (round.marks[i]==='star' ? ' star' : round.marks[i]==='retry' ? ' retry' : '') + (i===round.i ? ' now' : '');
+    d.textContent = round.marks[i]==='star' ? '⭐' : round.marks[i]==='retry' ? '👍' : '';
+  });
+}
+const gradeOk = q => cfg.grade==='both' || q.g===cfg.grade;
+const inScope = (q, sc) => gradeOk(q) && (!sc.subject || q.subject===sc.subject) && (!sc.group || q.group===sc.group);
+function pickQuestion(){
+  let all = QUESTIONS.filter(q => inScope(q, scope));
+  if(!all.length) all = QUESTIONS.filter(gradeOk);
+  if(!all.length) all = QUESTIONS;
+  let cand = all.filter(q => !round.used.has(q.id));
+  if(!cand.length) cand = all;
+  if(!scope.subject){            // Surprise me: choose a subject first so one subject doesn't crowd out the rest
+    const subs = [...new Set(cand.map(q=>q.subject))];
+    const sj = rand(subs); cand = cand.filter(q=>q.subject===sj);
+  }
+  let best = null, bs = 1e9;
+  cand.forEach(q=>{
+    const s = Math.abs(q.lvl-round.level)*10 + (prog.recent.includes(q.id)?8:0) + Math.random()*9;
+    if(s<bs){ bs = s; best = q; }
+  });
+  return best;
+}
+function nextQuestion(first){
+  if(round.i >= cfg.n) return finishRound();
+  const q = pickQuestion();
+  round.used.add(q.id);
+  prog.recent = [q.id].concat(prog.recent).slice(0, 40);
+  cur = {q, tries:0, locked:false, advanced:false, order: shuffle(q.opts)};   // order = left-to-right order on screen
+  $('nextBtn').style.display = 'none';
+  markProg();
+  $('prompt').textContent = q.prompt;
+  renderDisplay(q.display);
+  renderOptions(cur.order);
+  $('mascot').textContent = '🦖';
+  const readOpts = cfg.read && q.read !== false && !q.opts.every(o=>/^\d+$/.test(o));
+  const speech = [q.prompt];
+  if(readOpts){
+    const names = cur.order.map(o => clean(o)).filter(Boolean);        // same order as the buttons, left to right
+    if(names.length === cur.order.length) speech.push(...names);
+  }
+  const thisQ = cur;
+  setTimeout(()=>{ if(cur === thisQ) say(speech); }, first ? 350 : 150);
+}
+function renderDisplay(d){
+  const el = $('display'); el.innerHTML = '';
+  if(!d){ el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  const lines = d.split(/\s{3,}/).map(s=>s.trim()).filter(Boolean);
+  lines.forEach(line=>{
+    const div = document.createElement('div'); div.className='dline'; div.textContent = line;
+    const n = Array.from(line.replace(/\uFE0F/g,'')).length;
+    let size = n<=5 ? 6.2 : n<=9 ? 5 : n<=13 ? 4 : n<=18 ? 3.2 : 2.6;
+    if(lines.length>1) size = Math.min(size, 3.4);
+    div.style.fontSize = `clamp(28px, ${size*1.5}vmin, ${size*16}px)`;
+    el.appendChild(div);
+  });
+}
+function renderOptions(order){
+  const box = $('opts'); box.innerHTML = '';
+  order.forEach(opt=>{
+    const b = document.createElement('button');
+    b.className = 'opt chunk'; b.setAttribute('aria-label', clean(opt) || opt);
+    const m = opt.match(/^([^\p{L}\p{N}\s]+)\s+(.+)$/u);
+    if(m){ b.innerHTML = `<span class="big">${m[1]}</span><span class="lbl">${m[2]}</span>`; }
+    else if(/^\d+$/.test(opt)){ b.innerHTML = `<span class="num">${opt}</span>`; }
+    else if(!/[\p{L}\p{N}]/u.test(opt)){ b.innerHTML = `<span class="big">${opt}</span>`; }
+    else { b.innerHTML = `<span class="txt">${opt}</span>`; }
+    b.addEventListener('click', ()=>pick(b, opt));
+    box.appendChild(b);
+  });
+}
+function bump(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+function pick(btn, opt){
+  if(!cur || cur.locked) return;
+  const s = prog.stats[cur.q.skill] = prog.stats[cur.q.skill] || {t:0, r:0};
+  if(opt === cur.q.ans){
+    cur.locked = true;
+    btn.classList.add('right');
+    [...$('opts').children].forEach(o=>{ if(o!==btn && !o.classList.contains('wrong')) o.classList.add('dim'); });
+    const first = cur.tries === 0;
+    if(first){
+      s.t++; s.r++;
+      round.stars++; round.streak++; round.bestStreak = Math.max(round.bestStreak, round.streak);
+      round.marks[round.i] = 'star';
+      round.okRun++; if(round.okRun>=2){ round.level = Math.min(3, round.level+1); round.okRun = 0; }
+      $('score').textContent = '⭐ ' + round.stars; bump($('score'),'pop');
+      confetti(55, .5, .55);
+    } else {
+      round.streak = 0; round.marks[round.i] = 'retry';
+      confetti(25, .5, .55, .7);
+    }
+    $('streak').textContent = round.streak>=2 ? `🔥 ${round.streak} in a row!` : '';
+    sfx('right'); bump($('mascot'),'bounce'); $('mascot').textContent = '🤩';
+    markProg();
+    saveProg();
+    const line = first ? rand(PRAISE) : 'You did it! Good job!';
+    const thisQ = cur.q;
+    if(thisQ.fact){
+      $('prompt').textContent = '💡 ' + thisQ.fact;
+      $('nextBtn').style.display = '';
+      const done = cfg.voice ? say([line, 'Did you know?', thisQ.fact]) : new Promise(r=>setTimeout(r, Math.max(3500, thisQ.fact.length*80)));
+      done.then(()=>setTimeout(()=>advance(thisQ), 1000));
+    } else {
+      say(line);
+      setTimeout(()=>advance(thisQ), 1900);
+    }
+  } else {
+    if(cur.tries === 0){ s.t++; round.streak = 0; round.okRun = 0; round.level = Math.max(1, round.level-1); $('streak').textContent=''; }
+    cur.tries++;
+    btn.classList.add('wrong');
+    sfx('wrong'); bump($('mascot'),'shake'); $('mascot').textContent = '🤔';
+    say(rand(TRY));
+    saveProg();
+  }
+}
+
+let quitOpen = false, pendingAdv = false;
+function advance(q){
+  if(!cur || cur.q!==q || cur.advanced) return;
+  if(quitOpen){ pendingAdv = true; return; }
+  cur.advanced = true; $('nextBtn').style.display = 'none';
+  round.i++; nextQuestion();
+}
+
+function finishRound(){
+  stopSpeech();
+  const total = cfg.n;
+  prog.stars += round.stars; prog.rounds++; prog.best = Math.max(prog.best, round.bestStreak);
+  const fresh = STICKERS.filter(s=>!prog.stickers.includes(s));
+  const st = rand(fresh.length ? fresh : STICKERS);
+  if(!prog.stickers.includes(st)) prog.stickers.push(st);
+  saveProg();
+  const nm = cfg.name || 'friend';
+  $('resTitle').textContent = round.stars===total ? `Perfect, ${nm}! 🎉` : round.stars>=total/2 ? `Great job, ${nm}!` : `Nice try, ${nm}!`;
+  const bs = $('bigstars'); bs.innerHTML = '';
+  for(let i=0;i<total;i++){ const sp = document.createElement('span'); sp.textContent = i<round.stars ? '⭐' : '☆'; sp.style.animationDelay = (i*0.12)+'s'; bs.appendChild(sp); }
+  $('resSub').textContent = `${scope.label}: you earned ${round.stars} out of ${total} stars`;
+  $('newSticker').textContent = st;
+  show('result');
+  sfx('done');
+  confetti(140,.5,.3,1.3); setTimeout(()=>confetti(90,.25,.4),500); setTimeout(()=>confetti(90,.75,.4),800);
+  setTimeout(()=>say(`Amazing work, ${nm}! You earned ${round.stars} stars and a new sticker!`), 700);
+}
+
+/* ---------- sticker book ---------- */
+function openBook(){
+  const b = $('book'); b.innerHTML = '';
+  STICKERS.forEach(s=>{ const d = document.createElement('div'); d.textContent = s; if(!prog.stickers.includes(s)) d.className='lock'; b.appendChild(d); });
+  $('bookCount').textContent = `${prog.stickers.length} of ${STICKERS.length} collected`;
+  $('bookModal').classList.add('on');
+}
+
+/* ---------- settings ---------- */
+function seg(id, getter, setter){
+  const box = $(id);
+  const paint = () => [...box.children].forEach(b=>b.classList.toggle('sel', String(getter())===b.dataset.v));
+  box.addEventListener('click', e=>{ const b = e.target.closest('button'); if(!b) return; setter(b.dataset.v); saveCfg(); paint(); refreshHome(); });
+  paint();
+}
+function statsHtml(){
+  const rows = Object.entries(prog.stats).sort((a,b)=>b[1].t-a[1].t);
+  const head = `<p class="small" style="margin:0 0 8px">Rounds played: ${prog.rounds} · Total stars: ${prog.stars} · Best streak: ${prog.best}</p>`;
+  if(!rows.length) return head + '<p class="small">Play a round to see which skills are strong.</p>';
+  return head + '<table><tr><th>Skill</th><th>First-try correct</th><th></th></tr>' + rows.map(([k,v])=>{
+    const pct = Math.round(100*v.r/v.t);
+    return `<tr><td>${k}</td><td>${v.r} of ${v.t} (${pct}%)</td><td><div class="bar"><i style="width:${pct}%"></i></div></td></tr>`;
+  }).join('') + '</table>';
+}
+function openSettings(){
+  $('urlIn').value = cfg.sheetUrl || ''; paintSrc();
+  $('nameIn').value = cfg.name; $('rate').value = cfg.rate; $('stats').innerHTML = statsHtml();
+  $('setModal').classList.add('on');
+}
+
+/* ---------- wiring ---------- */
+$('pickBack').addEventListener('click', ()=>{ stopSpeech(); sfx('pop'); show('home'); });
+$('nextBtn').addEventListener('click', ()=>{ if(cur) advance(cur.q); });
+$('againBtn').addEventListener('click', startRound);
+$('homeBtn').addEventListener('click', ()=>{ stopSpeech(); refreshHome(); show('home'); });
+$('bookBtn').addEventListener('click', openBook);
+$('homeDino').addEventListener('click', ()=>{ sfx('pop'); say(rand(['Roar! Let\'s play!','Hi '+(cfg.name||'friend')+'!','Let\'s do some math!'])); });
+$('bubble').addEventListener('click', ()=>{ if(!cur) return; if(cur.locked && cur.q.fact){ say(cur.q.fact); return; } const readOpts = cfg.read && cur.q.read !== false && !cur.q.opts.every(o=>/^\d+$/.test(o)); const nm = cur.order.map(clean).filter(Boolean); say([cur.q.prompt].concat(readOpts && nm.length===cur.order.length ? nm : [])); });
+$('mascot').addEventListener('click', ()=>$('bubble').click());
+$('homeHold').addEventListener('click', ()=>{
+  if(!round) return;
+  quitOpen = true; sfx('pop');
+  $('quitSub').textContent = round.stars ? `You have ${round.stars} ${round.stars===1?'star':'stars'} so far. You keep them!` : 'You can pick something else to play.';
+  $('quitModal').classList.add('on');
+});
+$('keepBtn').addEventListener('click', ()=>{
+  quitOpen = false; $('quitModal').classList.remove('on');
+  if(pendingAdv){ pendingAdv = false; if(cur) advance(cur.q); }
+});
+$('quitBtn').addEventListener('click', ()=>{
+  quitOpen = false; pendingAdv = false; $('quitModal').classList.remove('on');
+  stopSpeech();
+  if(round){ prog.stars += round.stars; saveProg(); }      // keep the stars already earned
+  round = null; cur = null; $('nextBtn').style.display = 'none';
+  refreshHome();
+  const s = SUBJECTS.find(x=>x.key===scope.subject);
+  if(s) openPicker(s); else show('home');                  // back to that subject's skills, or the main menu
+});
+holdable($('gear'), 1500, openSettings);
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click', ()=>{
+  document.querySelectorAll('.modal').forEach(m=>m.classList.remove('on')); refreshHome(); }));
+$('nameIn').addEventListener('input', e=>{ cfg.name = e.target.value.trim(); saveCfg(); });
+$('rate').addEventListener('input', e=>{ cfg.rate = parseFloat(e.target.value); saveCfg(); });
+$('testVoice').addEventListener('click', ()=>say(`Hi ${cfg.name||'friend'}! Which word rhymes with cat? Hat, dog, or sun?`));
+$('resetBtn').addEventListener('click', ()=>{
+  if(confirm('Erase all stars, stickers and progress?')){
+    Object.assign(prog, {stars:0, rounds:0, best:0, stickers:[], recent:[], stats:{}}); saveProg(); $('stats').innerHTML = statsHtml(); refreshHome();
+  }
+});
+$('saveUrl').addEventListener('click', async ()=>{
+  cfg.sheetUrl = $('urlIn').value.trim(); saveCfg();
+  if(!cfg.sheetUrl && !DEFAULT_SHEET_URL){ QUESTIONS = FALLBACK; src.kind='builtin'; src.msg=''; }
+  else { $('srcStatus').textContent = 'Loading…'; await loadSheet(); }
+  paintSrc();
+});
+$('refreshSheet').addEventListener('click', async ()=>{ $('srcStatus').textContent = 'Loading…'; await loadSheet(); paintSrc(); });
+$('clearUrl').addEventListener('click', ()=>{ cfg.sheetUrl=''; saveCfg(); $('urlIn').value=''; QUESTIONS=FALLBACK; pendingQ=null; src.kind='builtin'; src.msg=''; paintSrc(); });
+seg('segGrade', ()=>cfg.grade, v=>cfg.grade = v);
+seg('segN', ()=>cfg.n, v=>cfg.n = parseInt(v,10));
+seg('segVoice', ()=>cfg.voice?1:0, v=>{ cfg.voice = v==='1'; if(!cfg.voice) stopSpeech(); });
+seg('segRead', ()=>cfg.read?1:0, v=>cfg.read = v==='1');
+seg('segSfx', ()=>cfg.sfx?1:0, v=>cfg.sfx = v==='1');
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) stopSpeech(); });
+document.addEventListener('contextmenu', e=>e.preventDefault());
+
+refreshHome();
+initQuestions();
+</script>
+</body>
+</html>
